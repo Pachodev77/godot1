@@ -1,49 +1,59 @@
 shader_type spatial;
-render_mode unshaded, cull_back, depth_draw_never;
+render_mode unshaded, cull_disabled, depth_draw_never, blend_add;
 
 uniform float star_visibility : hint_range(0.0, 1.0) = 1.0;
-uniform float star_density : hint_range(0.0, 1.0) = 0.5;
-uniform float star_size : hint_range(0.0, 0.1) = 0.01;
 uniform float twinkle_speed : hint_range(0.0, 5.0) = 1.0;
+uniform float star_density : hint_range(0.0, 1.0) = 0.5;
 
+// Pseudo-random number generator
 float random(vec2 st) {
     return fract(sin(dot(st.xy, vec2(12.9898, 78.233))) * 43758.5453123);
 }
 
-float star(vec2 uv, float seed) {
-    vec2 star_pos = vec2(random(vec2(seed, seed * 2.0)), random(vec2(seed * 3.0, seed * 4.0)));
-    float dist = distance(uv, star_pos);
-    float star_brightness = random(vec2(seed * 5.0, seed * 6.0));
-    
-    float twinkle = sin(TIME * twinkle_speed + seed * 10.0) * 0.3 + 0.7;
-    
-    float star_val = smoothstep(star_size, 0.0, dist) * star_brightness * twinkle;
-    return star_val;
-}
-
 void fragment() {
-    vec2 uv = UV;
-    vec3 color = vec3(0.0);
+    if (star_visibility <= 0.01) {
+        discard;
+    }
+
+    vec2 uv = UV * (100.0 + star_density * 200.0); // Scale UV for tiling
+    vec2 id = floor(uv);
+    vec2 f = fract(uv);
     
-    int num_stars = int(star_density * 200.0);
+    float star_val = 0.0;
     
-    for (int i = 0; i < num_stars; i++) {
-        float seed = float(i) * 0.1;
-        float star_val = star(uv, seed);
-        
-        float star_color_rand = random(vec2(seed * 7.0, seed * 8.0));
-        vec3 star_color;
-        if (star_color_rand > 0.95) {
-            star_color = vec3(0.8, 0.9, 1.0);
-        } else if (star_color_rand > 0.9) {
-            star_color = vec3(1.0, 0.9, 0.8);
-        } else {
-            star_color = vec3(1.0, 1.0, 1.0);
+    // Check 3x3 grid for stars to handle edges
+    for (int y = -1; y <= 1; y++) {
+        for (int x = -1; x <= 1; x++) {
+            vec2 neighbor = vec2(float(x), float(y));
+            vec2 cell_id = id + neighbor;
+            
+            // Random position 0..1 in the neighbor cell
+            vec2 point = vec2(random(cell_id), random(cell_id + vec2(10.0)));
+            
+            // Only create a star if random check passes (variable density)
+            if (random(cell_id * 2.0) > 0.5) {
+                // Check distance from current pixel to the star in neighbor cell
+                vec2 diff = neighbor + point - f;
+                float dist = length(diff);
+                
+                if (dist < 0.2) { // Star radius
+                    // Random brightness
+                    float brightness = random(cell_id + vec2(5.0));
+                    
+                    // Twinkle effect
+                    float twinkle = sin(TIME * twinkle_speed + brightness * 20.0) * 0.4 + 0.6;
+                    
+                    // Smooth soft glow
+                    float glow = max(0.0, 1.0 - dist / 0.2);
+                    glow = pow(glow, 2.0); // Make it sharper
+                    
+                    star_val += glow * brightness * twinkle;
+                }
+            }
         }
-        
-        color += star_color * star_val;
     }
     
-    ALBEDO = color * star_visibility;
-    ALPHA = star_visibility;
+    vec3 color = vec3(1.0, 1.0, 1.0) * star_val;
+    ALBEDO = color;
+    ALPHA = clamp(star_val, 0.0, 1.0) * star_visibility;
 }

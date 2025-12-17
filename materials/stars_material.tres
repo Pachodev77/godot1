@@ -5,8 +5,6 @@
 [resource]
 shader = ExtResource( 1 )
 shader_param/star_visibility = 1.0
-shader_param/star_density = 0.5
-shader_param/star_size = 0.01
 shader_param/twinkle_speed = 1.0
-shader_param/time = 0.0
+shader_param/star_density = 0.5
 

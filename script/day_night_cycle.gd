@@ -1,6 +1,6 @@
 extends Spatial
 
-export var cycle_duration = 240.0  # 4 minutos para un ciclo completo
+export var cycle_duration = 360.0  # 6 minutos para un ciclo completo
 export var start_time = 0.5  # 0.0 es medianoche, 0.5 es mediodía
 
 var time_of_day = 0.0

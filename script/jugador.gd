@@ -15,6 +15,7 @@ var altura = 0
 # Joystick variables
 var move_vector = Vector2.ZERO
 var camera_vector = Vector2.ZERO
+var jump_requested = false
 
 # Camera zoom variables
 var camera_zoomed_out = false
@@ -58,34 +59,40 @@ func _physics_process(delta):
 		var angle_diff = fposmod(target_rotation - current_model_rotation + PI, TAU) - PI
 		$"3DGodotRobot".rotation.y += angle_diff * 0.15
 
-	#Sistema de animacion
-	var horizontal_velocity = Vector2(velocidad.x, velocidad.z)
-	var is_moving = horizontal_velocity.length() > 0.2
-	if(not is_moving and is_on_floor()):
-		anim = "Idle-loop"
-	elif(is_moving and is_on_floor()):
-		anim = "Run-loop"
-	if(!is_on_floor()):
-		anim = "Jump"
-
-	$"3DGodotRobot/AnimationPlayer".play(anim)
-
 	# Movimiento horizontal
 	velocidad.x = direction.x * speed
 	velocidad.z = direction.z * speed
 
-	# Saltar
+	# Gravedad y Salto
+	velocidad.y -= gravity * delta
+	
+	var snap = Vector3.DOWN
 	if is_on_floor():
-		if Input.is_action_just_pressed("tecla_salto"):
+		if jump_requested or Input.is_action_just_pressed("tecla_salto"):
 			velocidad.y = jump_velocity
-	else:
-		velocidad.y -= gravity * delta
-
-	# Aplica movimiento
-	move_and_slide(velocidad,Vector3.UP)
+			snap = Vector3.ZERO
+	
+	jump_requested = false
+	
+	# Aplica movimiento con snap para evitar rebotes en pendientes
+	velocidad = move_and_slide_with_snap(velocidad, snap, Vector3.UP, true)
 
 	# Verificar si el jugador está en el suelo
 	on_ground = is_on_floor()
+
+	#Sistema de animacion (Actualizado despues del movimiento)
+	var horizontal_velocity = Vector2(velocidad.x, velocidad.z)
+	var is_moving = horizontal_velocity.length() > 0.2
+	
+	if on_ground:
+		if is_moving:
+			anim = "Run-loop"
+		else:
+			anim = "Idle-loop"
+	else:
+		anim = "Jump"
+
+	$"3DGodotRobot/AnimationPlayer".play(anim)
 
 	# Joystick camera rotation (orbital)
 	if camera_vector != Vector2.ZERO:
@@ -93,7 +100,7 @@ func _physics_process(delta):
 		pivot.rotate_y(-camera_vector.x * mouse_sensitivity * 20)
 		
 		# Rotación vertical (alrededor del eje X del pivot)
-		camera_rotation_x -= camera_vector.y * mouse_sensitivity * 20
+		camera_rotation_x -= camera_vector.y * mouse_sensitivity * 10
 		camera_rotation_x = clamp(camera_rotation_x, deg2rad(max_look_down), deg2rad(max_look_up))
 		pivot.rotation.x = camera_rotation_x
 	
@@ -104,11 +111,12 @@ func _physics_process(delta):
 	$Pivot/Camera.translation.z = new_distance
 
 export var mouse_sensitivity : float = 0.003
-export var max_look_up : float = 80.0
-export var max_look_down : float = -80.0
+export var max_look_up : float = 25.0
+export var max_look_down : float = -30.0
 
 onready var pivot = $Pivot
 onready var camera = $Pivot/Camera
+onready var flashlight = $"3DGodotRobot/SpotLight"
 
 var camera_rotation_x := 0.0
 
@@ -130,6 +138,10 @@ func _ready():
 	var zoom_button = get_node_or_null("/root/Escena/CanvasLayer/MarginContainer/VBoxContainer/HBoxContainer/CameraJoystickContainer/ButtonContainer/ZoomButton")
 	if zoom_button:
 		zoom_button.connect("pressed", self, "_on_ZoomButton_pressed")
+
+	var flashlight_button = get_node_or_null("/root/Escena/CanvasLayer/MarginContainer/VBoxContainer/HBoxContainer/CameraJoystickContainer/ButtonContainer/FlashlightButton")
+	if flashlight_button:
+		flashlight_button.connect("pressed", self, "_on_FlashlightButton_pressed")
 	
 	var jump_button = get_node_or_null("/root/Escena/CanvasLayer/MarginContainer/VBoxContainer/HBoxContainer/JumpButtonContainer/JumpButton")
 	if jump_button:
@@ -152,6 +164,9 @@ func _on_CameraJoystick_released():
 func _on_ZoomButton_pressed():
 	camera_zoomed_out = !camera_zoomed_out
 
+func _on_FlashlightButton_pressed():
+	if flashlight:
+		flashlight.visible = !flashlight.visible
+
 func _on_JumpButton_pressed():
-	if is_on_floor():
-		velocidad.y = jump_velocity
+	jump_requested = true

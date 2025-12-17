@@ -12,9 +12,22 @@ extents = Vector3( 100, 1, 100 )
 [node name="Escena" type="Spatial"]
 
 [node name="DayNightSystem" parent="." instance=ExtResource( 1 )]
+cycle_duration = 360.0
 
 [node name="Forest" parent="." instance=ExtResource( 2 )]
 transform = Transform( 10, 0, 0, 0, 10, 0, 0, 0, 10, 0, 0, 0 )
+script = ExtResource( 3 )
+
+[node name="Forest2" parent="." instance=ExtResource( 2 )]
+transform = Transform( 0, 0, 10, 0, 10, 0, -10, 0, 0, 155, 0, 0 )
+script = ExtResource( 3 )
+
+[node name="Forest3" parent="." instance=ExtResource( 2 )]
+transform = Transform( -10, 0, 0, 0, 10, 0, 0, 0, -10, 0, 0, 155 )
+script = ExtResource( 3 )
+
+[node name="Forest4" parent="." instance=ExtResource( 2 )]
+transform = Transform( 0, 0, -10, 0, 10, 0, 10, 0, 0, 155, 0, 155 )
 script = ExtResource( 3 )
 
 [node name="Ground" type="StaticBody" parent="."]
@@ -24,7 +37,7 @@ transform = Transform( 10, 0, 0, 0, 1, 0, 0, 0, 10, 0, -1, 0 )
 shape = SubResource( 1 )
 
 [node name="jugador" parent="." instance=ExtResource( 4 )]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0 )
+transform = Transform( 0.996237, 0, 0.0866662, 0, 1, 0, -0.0866662, 0, 0.996237, 0, 2, -2.32361 )
 
 [node name="CanvasLayer" parent="." instance=ExtResource( 5 )]
 

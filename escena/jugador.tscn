@@ -20,10 +20,21 @@ transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.0, 0 )
 transform = Transform( 1, 0, 0, 0, 0.965926, 0.258819, 0, -0.258819, 0.965926, 0, 0, 6 )
 current = true
 near = 1.0
-far = 500.0
+far = 4000.0
 
 [node name="3DGodotRobot" parent="." instance=ExtResource( 2 )]
 transform = Transform( -1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 0, 0 )
+
+[node name="SpotLight" type="SpotLight" parent="3DGodotRobot"]
+transform = Transform( -1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 1.2, 0.8 )
+light_color = Color( 1, 1, 1, 1 )
+light_energy = 2.0
+spot_angle = 45.0
+spot_attenuation = 0.5
+shadow_enabled = true
+shadow_bias = 0.4
+spot_range = 25.0
+visible = false
 
 [node name="Label" type="Label" parent="."]
 margin_right = 40.0

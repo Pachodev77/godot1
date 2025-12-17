@@ -144,6 +144,13 @@ margin_bottom = 25.0
 rect_min_size = Vector2( 80, 25 )
 text = "ZOOM"
 
+[node name="FlashlightButton" type="Button" parent="MarginContainer/VBoxContainer/HBoxContainer/CameraJoystickContainer/ButtonContainer"]
+margin_left = 144.0
+margin_right = 224.0
+margin_bottom = 25.0
+rect_min_size = Vector2( 80, 25 )
+text = "LINTERNA"
+
 [node name="CameraJoystick" parent="MarginContainer/VBoxContainer/HBoxContainer/CameraJoystickContainer" instance=ExtResource( 1 )]
 anchor_right = 0.0
 anchor_bottom = 0.0
