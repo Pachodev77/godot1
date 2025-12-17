@@ -1,0 +1,36 @@
+[remap]
+
+importer="texture"
+type="StreamTexture"
+path.s3tc="res://.import/Green_Elka_baseColor.png-6ff90a512478a65a6d97076c4d26c521.s3tc.stex"
+path.etc="res://.import/Green_Elka_baseColor.png-6ff90a512478a65a6d97076c4d26c521.etc.stex"
+metadata={
+"imported_formats": [ "s3tc", "etc" ],
+"vram_texture": true
+}
+
+[deps]
+
+source_file="res://forest1/textures/Green_Elka_baseColor.png"
+dest_files=[ "res://.import/Green_Elka_baseColor.png-6ff90a512478a65a6d97076c4d26c521.s3tc.stex", "res://.import/Green_Elka_baseColor.png-6ff90a512478a65a6d97076c4d26c521.etc.stex" ]
+
+[params]
+
+compress/mode=2
+compress/lossy_quality=0.7
+compress/hdr_mode=0
+compress/bptc_ldr=0
+compress/normal_map=0
+flags/repeat=true
+flags/filter=true
+flags/mipmaps=true
+flags/anisotropic=false
+flags/srgb=1
+process/fix_alpha_border=true
+process/premult_alpha=false
+process/HDR_as_SRGB=false
+process/invert_color=false
+stream=false
+size_limit=0
+detect_3d=false
+svg/scale=1.0

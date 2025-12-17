@@ -31,20 +31,33 @@ func _process(delta):
 		emit_signal("joystick_updated", output)
 
 func _gui_input(event):
+	var event_pos = Vector2.ZERO
+	var is_in_bounds = false
+	
 	if event is InputEventScreenTouch:
-		if event.pressed and touch_id == -1:
+		event_pos = event.position
+		is_in_bounds = Rect2(Vector2.ZERO, rect_size).has_point(event_pos)
+		
+		if event.pressed and touch_id == -1 and is_in_bounds:
 			is_pressed = true
 			touch_id = event.index
+			accept_event()
 		elif not event.pressed and event.index == touch_id:
 			_release_joystick()
+			accept_event()
 	
 	elif event is InputEventMouseButton:
+		event_pos = event.position
+		is_in_bounds = Rect2(Vector2.ZERO, rect_size).has_point(event_pos)
+		
 		if event.button_index == BUTTON_LEFT:
-			if event.pressed and touch_id == -1:
+			if event.pressed and touch_id == -1 and is_in_bounds:
 				is_pressed = true
 				touch_id = -2
+				accept_event()
 			elif not event.pressed and touch_id == -2:
 				_release_joystick()
+				accept_event()
 
 func _release_joystick():
 	is_pressed = false
