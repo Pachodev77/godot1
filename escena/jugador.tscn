@@ -4,20 +4,21 @@
 [ext_resource path="res://3DGodotRobot.glb" type="PackedScene" id=2]
 
 [sub_resource type="BoxShape" id=1]
+extents = Vector3( 0.5, 1.0, 0.5 )
 
 [node name="jugador" type="KinematicBody"]
 script = ExtResource( 1 )
 jump_velocity = 15.0
 
 [node name="CollisionShape" type="CollisionShape" parent="."]
-transform = Transform( 0.383165, 0, 0, 0, 0.836219, 0, 0, 0, 0.259529, 0.0379386, 0.785813, 0.0247252 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.0, 0 )
 shape = SubResource( 1 )
 
 [node name="Pivot" type="Spatial" parent="."]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, 0 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.0, 0 )
 
 [node name="Camera" type="Camera" parent="Pivot"]
-transform = Transform( 1, 0, 0, 0, 0.965926, 0.258819, 0, -0.258819, 0.965926, 0, 0, 4 )
+transform = Transform( 1, 0, 0, 0, 0.965926, 0.258819, 0, -0.258819, 0.965926, 0, 0, 6 )
 current = true
 near = 1.0
 far = 500.0

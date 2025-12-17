@@ -18,11 +18,16 @@ var camera_vector = Vector2.ZERO
 
 # Camera zoom variables
 var camera_zoomed_out = false
-var camera_default_distance = 4.0
+var camera_default_distance = 6.0
 var camera_zoom_distance = 8.0
 var zoom_speed = 10.0
 
 func _physics_process(delta):
+	# Ajustar la posición de la cámara manualmente
+	if pivot and camera:
+		var target_pos = Vector3(0, 2.0, camera.transform.origin.z)  # Altura reducida a 2.0
+		camera.transform.origin = camera.transform.origin.linear_interpolate(target_pos, 10.0 * delta)
+		
 	var direction = Vector3.ZERO
 
 	# Obtener la dirección basada en la rotación de la cámara (orbital)
@@ -103,10 +108,15 @@ export var max_look_up : float = 80.0
 export var max_look_down : float = -80.0
 
 onready var pivot = $Pivot
+onready var camera = $Pivot/Camera
 
 var camera_rotation_x := 0.0
 
 func _ready():
+	# Ajustar la posición inicial de la cámara
+	pivot.transform.origin.y = 2.0  # Ajustar altura del pivot
+	camera.transform.origin.y = 0.0  # Asegurar que la cámara esté alineada con el pivot
+	
 	var move_joystick = get_node_or_null("/root/Escena/CanvasLayer/MarginContainer/VBoxContainer/HBoxContainer/MoveJoystickContainer/MoveJoystick")
 	if move_joystick:
 		move_joystick.connect("joystick_updated", self, "_on_MoveJoystick_updated")
