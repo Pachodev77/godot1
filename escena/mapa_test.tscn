@@ -1,48 +1,43 @@
 [gd_scene load_steps=6 format=2]
 
-[ext_resource path="res://escena/jugador.tscn" type="PackedScene" id=1]
-[ext_resource path="res://escena/Control.tscn" type="PackedScene" id=2]
+[ext_resource path="res://forest/scene.gltf" type="PackedScene" id=1]
+[ext_resource path="res://script/fix_forest_materials.gd" type="Script" id=2]
+[ext_resource path="res://escena/jugador.tscn" type="PackedScene" id=3]
+[ext_resource path="res://escena/Control.tscn" type="PackedScene" id=4]
 
-[sub_resource type="SpatialMaterial" id=1]
-albedo_color = Color( 0.921569, 0.407843, 0.407843, 1 )
-
-[sub_resource type="CubeMesh" id=2]
-material = SubResource( 1 )
-
-[sub_resource type="BoxShape" id=3]
-extents = Vector3( 1.00407, 1, 1 )
+[sub_resource type="BoxShape" id=1]
+extents = Vector3( 100, 1, 100 )
 
 [node name="Escena" type="Spatial"]
 
-[node name="StaticBody2" type="StaticBody" parent="."]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.15027, -31.2581 )
+[node name="Forest" parent="." instance=ExtResource( 1 )]
+transform = Transform( 10, 0, 0, 0, 10, 0, 0, 0, 10, 0, 0, 0 )
+script = ExtResource( 2 )
 
-[node name="MeshInstance" type="MeshInstance" parent="StaticBody2"]
-transform = Transform( 9.91101, 0, 0, 0, 0.1334, 0, 0, 0, 16.7285, 0, 0, 0 )
-mesh = SubResource( 2 )
-material/0 = null
+[node name="Ground" type="StaticBody" parent="."]
+transform = Transform( 10, 0, 0, 0, 1, 0, 0, 0, 10, 0, -1, 0 )
 
-[node name="CollisionShape" type="CollisionShape" parent="StaticBody2"]
-transform = Transform( 9.77006, 0, 0, 0, 0.231476, 0, 0, 0, 16.6679, 0, 0, 0 )
-shape = SubResource( 3 )
+[node name="CollisionShape" type="CollisionShape" parent="Ground"]
+shape = SubResource( 1 )
 
-[node name="StaticBody" type="StaticBody" parent="."]
-transform = Transform( 18.2285, 0, 0, 0, 1, 0, 0, 0, 3.04409, 0, 0, 0 )
+[node name="jugador" parent="." instance=ExtResource( 3 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0 )
 
-[node name="MeshInstance" type="MeshInstance" parent="StaticBody"]
-transform = Transform( 9.91101, 0, 0, 0, 0.1334, 0, 0, 0, 16.7285, -0.0114857, -2.38419e-007, -0.0375735 )
-mesh = SubResource( 2 )
-skeleton = NodePath("../..")
-material/0 = null
+[node name="CanvasLayer" parent="." instance=ExtResource( 4 )]
 
-[node name="CollisionShape" type="CollisionShape" parent="StaticBody"]
-transform = Transform( 9.77006, 0, 0, 0, 0.231476, 0, 0, 0, 16.6679, 0, 0, 0 )
-shape = SubResource( 3 )
+[node name="CenterSpacer" parent="CanvasLayer/MarginContainer/VBoxContainer/HBoxContainer" index="1"]
+margin_right = 408.0
 
-[node name="jugador" parent="." instance=ExtResource( 1 )]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.657889, 0 )
+[node name="JumpButtonContainer" parent="CanvasLayer/MarginContainer/VBoxContainer/HBoxContainer" index="2"]
+margin_left = 412.0
+margin_right = 512.0
 
-[node name="CanvasLayer" parent="." instance=ExtResource( 2 )]
+[node name="JumpButton" parent="CanvasLayer/MarginContainer/VBoxContainer/HBoxContainer/JumpButtonContainer" index="0"]
+margin_left = 0.0
+margin_right = 100.0
+
+[node name="CenterSpacer2" parent="CanvasLayer/MarginContainer/VBoxContainer/HBoxContainer" index="3"]
+margin_left = 516.0
 
 
 [editable path="CanvasLayer"]
