@@ -25,9 +25,16 @@ var zoom_speed = 10.0
 func _physics_process(delta):
 	var direction = Vector3.ZERO
 
-	# Input (WASD / flechas)
-	var forward = -transform.basis.z
-	var right = transform.basis.x
+	# Obtener la dirección basada en la rotación de la cámara (orbital)
+	var camera_basis = pivot.global_transform.basis
+	var forward = -camera_basis.z
+	var right = camera_basis.x
+	
+	# Proyectar forward y right en el plano horizontal (ignorar componente Y)
+	forward.y = 0
+	forward = forward.normalized()
+	right.y = 0
+	right = right.normalized()
 
 	$Label.text = str(forward)
 
@@ -36,6 +43,15 @@ func _physics_process(delta):
 	if move_vector != Vector2.ZERO:
 		direction += forward * -move_vector.y
 		direction += right * move_vector.x
+
+	direction = direction.normalized()
+
+	# Rotar solo el modelo del personaje hacia la dirección del movimiento (no el nodo principal)
+	if direction.length() > 0.1:
+		var target_rotation = atan2(direction.x, direction.z)
+		var current_model_rotation = $"3DGodotRobot".rotation.y
+		var angle_diff = fposmod(target_rotation - current_model_rotation + PI, TAU) - PI
+		$"3DGodotRobot".rotation.y += angle_diff * 0.15
 
 	#Sistema de animacion
 	var horizontal_velocity = Vector2(velocidad.x, velocidad.z)
@@ -48,8 +64,6 @@ func _physics_process(delta):
 		anim = "Jump"
 
 	$"3DGodotRobot/AnimationPlayer".play(anim)
-
-	direction = direction.normalized()
 
 	# Movimiento horizontal
 	velocidad.x = direction.x * speed
@@ -68,9 +82,12 @@ func _physics_process(delta):
 	# Verificar si el jugador está en el suelo
 	on_ground = is_on_floor()
 
-	# Joystick camera rotation
+	# Joystick camera rotation (orbital)
 	if camera_vector != Vector2.ZERO:
-		rotate_y(-camera_vector.x * mouse_sensitivity * 20)
+		# Rotación horizontal (alrededor del eje Y del pivot)
+		pivot.rotate_y(-camera_vector.x * mouse_sensitivity * 20)
+		
+		# Rotación vertical (alrededor del eje X del pivot)
 		camera_rotation_x -= camera_vector.y * mouse_sensitivity * 20
 		camera_rotation_x = clamp(camera_rotation_x, deg2rad(max_look_down), deg2rad(max_look_up))
 		pivot.rotation.x = camera_rotation_x
