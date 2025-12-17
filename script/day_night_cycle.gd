@@ -12,6 +12,13 @@ onready var stars = $Stars
 
 var sky: ProceduralSky
 
+# Cache para optimización
+var cached_sun_height = 0.0
+var last_update_time = 0.0
+var update_interval = 0.016  # ~60 FPS
+var last_sky_phase = -1  # -1=noche, 0=amanecer, 1=día, 2=atardecer
+var last_sun_color = Color(1.0, 1.0, 1.0)
+
 func _ready():
 	time_of_day = start_time
 	if environment and environment.environment and environment.environment.background_sky:
@@ -22,47 +29,83 @@ func _process(delta):
 	if time_of_day >= 1.0:
 		time_of_day -= 1.0
 	
-	update_sun_position()
-	update_lighting()
-	update_sky_color()
-	update_stars()
+	last_update_time += delta
+	
+	# Actualizar solo cada update_interval para reducir carga
+	if last_update_time >= update_interval:
+		cached_sun_height = -cos(time_of_day * TAU)
+		update_sun_position()
+		update_lighting()
+		update_sky_color()
+		update_stars()
+		last_update_time = 0.0
 
 func update_sun_position():
-	var sun_angle = time_of_day * TAU
-	sun.rotation.x = sun_angle
+	var t = time_of_day * TAU
+	var altitude = asin(cached_sun_height)  # [-PI/2, PI/2]
+	var azimuth = t                  # [0, 2PI)
+
+	sun.rotation.x = altitude
+	sun.rotation.y = azimuth
+
+	if sky:
+		sky.sun_latitude = rad2deg(altitude)
+		sky.sun_longitude = rad2deg(azimuth)
 
 func update_lighting():
-	var sun_height = -cos(time_of_day * PI * 2.0)
-	
-	if sun_height > 0.0:
-		var intensity = clamp(sun_height * 1.2, 0.0, 1.0)
-		sun.light_energy = intensity
-		sun.visible = true
+	if cached_sun_height > 0.0:
+		var intensity = clamp(cached_sun_height * 1.2, 0.0, 1.0)
+		if intensity != sun.light_energy:
+			sun.light_energy = intensity
+			sun.visible = true
 	else:
-		sun.light_energy = 0.0
-		sun.visible = false
-	
-	var dawn_dusk_factor = 1.0 - abs(sun_height)
-	dawn_dusk_factor = pow(dawn_dusk_factor, 2.0)
-	
+		if sun.light_energy != 0.0:
+			sun.light_energy = 0.0
+			sun.visible = false
+
 	if time_of_day > 0.2 and time_of_day < 0.3:
 		var t = (time_of_day - 0.2) / 0.1
-		sun.light_color = Color(1.0, 0.7 + t * 0.3, 0.5 + t * 0.5)
+		var new_color = Color(1.0, 0.7 + t * 0.3, 0.5 + t * 0.5)
+		if new_color != last_sun_color:
+			sun.light_color = new_color
+			last_sun_color = new_color
 	elif time_of_day > 0.7 and time_of_day < 0.8:
 		var t = (time_of_day - 0.7) / 0.1
-		sun.light_color = Color(1.0, 1.0 - t * 0.3, 1.0 - t * 0.5)
+		var new_color = Color(1.0, 1.0 - t * 0.3, 1.0 - t * 0.5)
+		if new_color != last_sun_color:
+			sun.light_color = new_color
+			last_sun_color = new_color
 	else:
 		sun.light_color = Color(1.0, 1.0, 1.0)
+
+	if sky:
+		sky.sun_energy = max(sun.light_energy, 0.0)
 
 func update_sky_color():
 	if not environment or not environment.environment or not sky:
 		return
 	
 	var env = environment.environment
-	var sun_height = -cos(time_of_day * PI * 2.0)
+	var current_phase = -1
+	
+	# Determinar fase actual
+	if cached_sun_height < -0.1:
+		current_phase = -1  # Noche
+	elif time_of_day >= 0.2 and time_of_day <= 0.3:
+		current_phase = 0  # Amanecer
+	elif cached_sun_height > 0.0:
+		current_phase = 1  # Día
+	elif time_of_day >= 0.7 and time_of_day <= 0.8:
+		current_phase = 2  # Atardecer
+	
+	# Solo actualizar si cambió la fase
+	if current_phase == last_sky_phase and current_phase != 0 and current_phase != 2:
+		return
+	
+	last_sky_phase = current_phase
 	
 	# Noche
-	if sun_height < -0.1:
+	if cached_sun_height < -0.1:
 		sky.sky_top_color = Color(0.05, 0.05, 0.15)
 		sky.sky_horizon_color = Color(0.1, 0.1, 0.2)
 		sky.ground_bottom_color = Color(0.02, 0.02, 0.05)
@@ -81,7 +124,7 @@ func update_sky_color():
 		env.ambient_light_energy = 0.3 + t * 0.5
 	
 	# Día
-	elif sun_height > 0.0:
+	elif cached_sun_height > 0.0:
 		sky.sky_top_color = Color(0.4, 0.6, 0.9)
 		sky.sky_horizon_color = Color(0.7, 0.8, 0.9)
 		sky.ground_bottom_color = Color(0.2, 0.3, 0.4)
@@ -103,10 +146,8 @@ func update_stars():
 	if not stars:
 		return
 	
-	var sun_height = -cos(time_of_day * PI * 2.0)
-	
-	if sun_height < -0.1:
-		var visibility = clamp((-sun_height - 0.1) / 0.3, 0.0, 1.0)
+	if cached_sun_height < -0.1:
+		var visibility = clamp((-cached_sun_height - 0.1) / 0.3, 0.0, 1.0)
 		stars.visible = true
 		
 		if stars.material_override:

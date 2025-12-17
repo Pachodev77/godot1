@@ -71,7 +71,7 @@ rect_min_size = Vector2( 0, 150 )
 [node name="MoveJoystickContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/HBoxContainer"]
 margin_right = 200.0
 margin_bottom = 150.0
-rect_min_size = Vector2( 200, 150 )
+rect_min_size = Vector2( 260, 200 )
 
 [node name="ButtonContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer/HBoxContainer/MoveJoystickContainer"]
 margin_right = 200.0
@@ -91,7 +91,7 @@ anchor_bottom = 0.0
 margin_top = 29.0
 margin_right = 200.0
 margin_bottom = 150.0
-rect_min_size = Vector2( 200, 121 )
+rect_min_size = Vector2( 260, 200 )
 size_flags_vertical = 3
 
 [node name="CenterSpacer" type="Control" parent="MarginContainer/VBoxContainer/HBoxContainer"]
@@ -130,7 +130,7 @@ size_flags_horizontal = 3
 margin_left = 724.0
 margin_right = 924.0
 margin_bottom = 150.0
-rect_min_size = Vector2( 200, 150 )
+rect_min_size = Vector2( 260, 200 )
 
 [node name="ButtonContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer/HBoxContainer/CameraJoystickContainer"]
 margin_right = 200.0
@@ -157,5 +157,5 @@ anchor_bottom = 0.0
 margin_top = 29.0
 margin_right = 200.0
 margin_bottom = 150.0
-rect_min_size = Vector2( 200, 121 )
+rect_min_size = Vector2( 260, 200 )
 size_flags_vertical = 3

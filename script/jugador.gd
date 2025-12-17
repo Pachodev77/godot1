@@ -24,9 +24,9 @@ var camera_zoom_distance = 8.0
 var zoom_speed = 10.0
 
 func _physics_process(delta):
-	# Ajustar la posición de la cámara manualmente
-	if pivot and camera:
-		var target_pos = Vector3(0, 2.0, camera.transform.origin.z)  # Altura reducida a 2.0
+	# Ajustar la posición de la cámara manualmente (solo si es necesario)
+	if abs(camera.transform.origin.y - 2.0) > 0.01:
+		var target_pos = Vector3(0, 2.0, camera.transform.origin.z)
 		camera.transform.origin = camera.transform.origin.linear_interpolate(target_pos, 10.0 * delta)
 		
 	var direction = Vector3.ZERO
@@ -42,9 +42,6 @@ func _physics_process(delta):
 	right.y = 0
 	right = right.normalized()
 
-	$Label.text = str(forward)
-
-
 	# Joystick movement
 	if move_vector != Vector2.ZERO:
 		direction += forward * -move_vector.y
@@ -55,9 +52,9 @@ func _physics_process(delta):
 	# Rotar solo el modelo del personaje hacia la dirección del movimiento (no el nodo principal)
 	if direction.length() > 0.1:
 		var target_rotation = atan2(direction.x, direction.z)
-		var current_model_rotation = $"3DGodotRobot".rotation.y
+		var current_model_rotation = robot_model.rotation.y
 		var angle_diff = fposmod(target_rotation - current_model_rotation + PI, TAU) - PI
-		$"3DGodotRobot".rotation.y += angle_diff * 0.15
+		robot_model.rotation.y += angle_diff * 0.15
 
 	# Movimiento horizontal
 	velocidad.x = direction.x * speed
@@ -92,7 +89,9 @@ func _physics_process(delta):
 	else:
 		anim = "Jump"
 
-	$"3DGodotRobot/AnimationPlayer".play(anim)
+	# Solo cambiar animación si es diferente
+	if animation_player.current_animation != anim:
+		animation_player.play(anim)
 
 	# Joystick camera rotation (orbital)
 	if camera_vector != Vector2.ZERO:
@@ -104,11 +103,12 @@ func _physics_process(delta):
 		camera_rotation_x = clamp(camera_rotation_x, deg2rad(max_look_down), deg2rad(max_look_up))
 		pivot.rotation.x = camera_rotation_x
 	
-	# Camera zoom
+	# Camera zoom (solo actualizar si hay diferencia)
 	var target_distance = camera_zoom_distance if camera_zoomed_out else camera_default_distance
-	var current_distance = $Pivot/Camera.translation.z
-	var new_distance = lerp(current_distance, target_distance, zoom_speed * delta)
-	$Pivot/Camera.translation.z = new_distance
+	var current_distance = camera.translation.z
+	if abs(current_distance - target_distance) > 0.01:
+		var new_distance = lerp(current_distance, target_distance, zoom_speed * delta)
+		camera.translation.z = new_distance
 
 export var mouse_sensitivity : float = 0.003
 export var max_look_up : float = 25.0
@@ -117,6 +117,8 @@ export var max_look_down : float = -30.0
 onready var pivot = $Pivot
 onready var camera = $Pivot/Camera
 onready var flashlight = $"3DGodotRobot/SpotLight"
+onready var robot_model = $"3DGodotRobot"
+onready var animation_player = $"3DGodotRobot/AnimationPlayer"
 
 var camera_rotation_x := 0.0
 
