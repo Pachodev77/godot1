@@ -99,7 +99,7 @@ func _physics_process(delta):
 		pivot.rotate_y(-camera_vector.x * mouse_sensitivity * 20)
 		
 		# Rotación vertical (alrededor del eje X del pivot)
-		camera_rotation_x -= camera_vector.y * mouse_sensitivity * 10
+		camera_rotation_x += camera_vector.y * mouse_sensitivity * 10
 		camera_rotation_x = clamp(camera_rotation_x, deg2rad(max_look_down), deg2rad(max_look_up))
 		pivot.rotation.x = camera_rotation_x
 	
@@ -122,20 +122,34 @@ onready var animation_player = $"3DGodotRobot/AnimationPlayer"
 
 var camera_rotation_x := 0.0
 
+# Referencias UI para multitouch
+onready var move_joystick_node = get_node_or_null("/root/Escena/CanvasLayer/MarginContainer/VBoxContainer/HBoxContainer/MoveJoystickContainer/MoveJoystick")
+onready var camera_joystick_node = get_node_or_null("/root/Escena/CanvasLayer/MarginContainer/VBoxContainer/HBoxContainer/CameraJoystickContainer/CameraJoystick")
+onready var zoom_button_node = get_node_or_null("/root/Escena/CanvasLayer/MarginContainer/VBoxContainer/HBoxContainer/CameraJoystickContainer/ButtonContainer/ZoomButton")
+onready var flashlight_button_node = get_node_or_null("/root/Escena/CanvasLayer/MarginContainer/VBoxContainer/HBoxContainer/CameraJoystickContainer/ButtonContainer/FlashlightButton")
+onready var jump_button_node = get_node_or_null("/root/Escena/CanvasLayer/MarginContainer/VBoxContainer/HBoxContainer/JumpButtonContainer/JumpButton")
+
 func _ready():
 	# Ajustar la posición inicial de la cámara
 	pivot.transform.origin.y = 2.0  # Ajustar altura del pivot
 	camera.transform.origin.y = 0.0  # Asegurar que la cámara esté alineada con el pivot
 	
-	var move_joystick = get_node_or_null("/root/Escena/CanvasLayer/MarginContainer/VBoxContainer/HBoxContainer/MoveJoystickContainer/MoveJoystick")
-	if move_joystick:
-		move_joystick.connect("joystick_updated", self, "_on_MoveJoystick_updated")
-		move_joystick.connect("joystick_released", self, "_on_MoveJoystick_released")
+	if move_joystick_node:
+		move_joystick_node.connect("joystick_updated", self, "_on_MoveJoystick_updated")
+		move_joystick_node.connect("joystick_released", self, "_on_MoveJoystick_released")
 
-	var camera_joystick = get_node_or_null("/root/Escena/CanvasLayer/MarginContainer/VBoxContainer/HBoxContainer/CameraJoystickContainer/CameraJoystick")
-	if camera_joystick:
-		camera_joystick.connect("joystick_updated", self, "_on_CameraJoystick_updated")
-		camera_joystick.connect("joystick_released", self, "_on_CameraJoystick_released")
+	if camera_joystick_node:
+		camera_joystick_node.connect("joystick_updated", self, "_on_CameraJoystick_updated")
+		camera_joystick_node.connect("joystick_released", self, "_on_CameraJoystick_released")
+
+	if zoom_button_node:
+		zoom_button_node.connect("pressed", self, "_on_ZoomButton_pressed")
+
+	if flashlight_button_node:
+		flashlight_button_node.connect("pressed", self, "_on_FlashlightButton_pressed")
+
+	if jump_button_node:
+		jump_button_node.connect("pressed", self, "_on_JumpButton_pressed")
 	
 	var zoom_button = get_node_or_null("/root/Escena/CanvasLayer/MarginContainer/VBoxContainer/HBoxContainer/CameraJoystickContainer/ButtonContainer/ZoomButton")
 	if zoom_button:
@@ -164,11 +178,28 @@ func _on_CameraJoystick_released():
 	camera_vector = Vector2.ZERO
 
 func _on_ZoomButton_pressed():
-	camera_zoomed_out = !camera_zoomed_out
+    camera_zoomed_out = !camera_zoomed_out
 
 func _on_FlashlightButton_pressed():
-	if flashlight:
-		flashlight.visible = !flashlight.visible
+    if flashlight:
+        flashlight.visible = !flashlight.visible
 
 func _on_JumpButton_pressed():
-	jump_requested = true
+    jump_requested = true
+
+func _input(event):
+    if event is InputEventScreenTouch:
+        var joystick_active = false
+        if move_joystick_node and move_joystick_node.touch_id != -1:
+            joystick_active = true
+        if camera_joystick_node and camera_joystick_node.touch_id != -1:
+            joystick_active = true
+        if joystick_active:
+            var pos = event.position
+            if event.pressed:
+                if jump_button_node and jump_button_node.get_global_rect().has_point(pos):
+                    _on_JumpButton_pressed()
+                if zoom_button_node and zoom_button_node.get_global_rect().has_point(pos):
+                    _on_ZoomButton_pressed()
+                if flashlight_button_node and flashlight_button_node.get_global_rect().has_point(pos):
+                    _on_FlashlightButton_pressed()

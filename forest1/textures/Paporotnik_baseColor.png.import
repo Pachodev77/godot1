@@ -3,16 +3,17 @@
 importer="texture"
 type="StreamTexture"
 path.s3tc="res://.import/Paporotnik_baseColor.png-b93dd098dc5be3a18e3b0f818f5b5bfa.s3tc.stex"
+path.etc2="res://.import/Paporotnik_baseColor.png-b93dd098dc5be3a18e3b0f818f5b5bfa.etc2.stex"
 path.etc="res://.import/Paporotnik_baseColor.png-b93dd098dc5be3a18e3b0f818f5b5bfa.etc.stex"
 metadata={
-"imported_formats": [ "s3tc", "etc" ],
+"imported_formats": [ "s3tc", "etc2", "etc" ],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://forest1/textures/Paporotnik_baseColor.png"
-dest_files=[ "res://.import/Paporotnik_baseColor.png-b93dd098dc5be3a18e3b0f818f5b5bfa.s3tc.stex", "res://.import/Paporotnik_baseColor.png-b93dd098dc5be3a18e3b0f818f5b5bfa.etc.stex" ]
+dest_files=[ "res://.import/Paporotnik_baseColor.png-b93dd098dc5be3a18e3b0f818f5b5bfa.s3tc.stex", "res://.import/Paporotnik_baseColor.png-b93dd098dc5be3a18e3b0f818f5b5bfa.etc2.stex", "res://.import/Paporotnik_baseColor.png-b93dd098dc5be3a18e3b0f818f5b5bfa.etc.stex" ]
 
 [params]
 

@@ -3,16 +3,17 @@
 importer="texture"
 type="StreamTexture"
 path.s3tc="res://.import/Green_Elka_baseColor.png-73984457c1322f43ba89ee8990b23db0.s3tc.stex"
+path.etc2="res://.import/Green_Elka_baseColor.png-73984457c1322f43ba89ee8990b23db0.etc2.stex"
 path.etc="res://.import/Green_Elka_baseColor.png-73984457c1322f43ba89ee8990b23db0.etc.stex"
 metadata={
-"imported_formats": [ "s3tc", "etc" ],
+"imported_formats": [ "s3tc", "etc2", "etc" ],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://forest/textures/Green_Elka_baseColor.png"
-dest_files=[ "res://.import/Green_Elka_baseColor.png-73984457c1322f43ba89ee8990b23db0.s3tc.stex", "res://.import/Green_Elka_baseColor.png-73984457c1322f43ba89ee8990b23db0.etc.stex" ]
+dest_files=[ "res://.import/Green_Elka_baseColor.png-73984457c1322f43ba89ee8990b23db0.s3tc.stex", "res://.import/Green_Elka_baseColor.png-73984457c1322f43ba89ee8990b23db0.etc2.stex", "res://.import/Green_Elka_baseColor.png-73984457c1322f43ba89ee8990b23db0.etc.stex" ]
 
 [params]
 

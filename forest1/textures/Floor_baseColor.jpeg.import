@@ -3,16 +3,17 @@
 importer="texture"
 type="StreamTexture"
 path.s3tc="res://.import/Floor_baseColor.jpeg-9e5a4090ec6426dfee55cf2e737aa3ec.s3tc.stex"
+path.etc2="res://.import/Floor_baseColor.jpeg-9e5a4090ec6426dfee55cf2e737aa3ec.etc2.stex"
 path.etc="res://.import/Floor_baseColor.jpeg-9e5a4090ec6426dfee55cf2e737aa3ec.etc.stex"
 metadata={
-"imported_formats": [ "s3tc", "etc" ],
+"imported_formats": [ "s3tc", "etc2", "etc" ],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://forest1/textures/Floor_baseColor.jpeg"
-dest_files=[ "res://.import/Floor_baseColor.jpeg-9e5a4090ec6426dfee55cf2e737aa3ec.s3tc.stex", "res://.import/Floor_baseColor.jpeg-9e5a4090ec6426dfee55cf2e737aa3ec.etc.stex" ]
+dest_files=[ "res://.import/Floor_baseColor.jpeg-9e5a4090ec6426dfee55cf2e737aa3ec.s3tc.stex", "res://.import/Floor_baseColor.jpeg-9e5a4090ec6426dfee55cf2e737aa3ec.etc2.stex", "res://.import/Floor_baseColor.jpeg-9e5a4090ec6426dfee55cf2e737aa3ec.etc.stex" ]
 
 [params]
 
