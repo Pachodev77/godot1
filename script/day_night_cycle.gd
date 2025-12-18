@@ -9,6 +9,7 @@ onready var sun = $DirectionalLight
 onready var sun_visual = $DirectionalLight/SunVisual
 onready var environment = $WorldEnvironment
 onready var stars = $Stars
+onready var player_camera = get_node_or_null("/root/Escena/jugador/Pivot/Camera")
 
 var sky: ProceduralSky
 
@@ -143,14 +144,18 @@ func update_sky_color():
 		env.ambient_light_energy = 0.8 - t * 0.4
 
 func update_stars():
-	if not stars:
-		return
-	
-	if cached_sun_height < -0.1:
-		var visibility = clamp((-cached_sun_height - 0.1) / 0.3, 0.0, 1.0)
-		stars.visible = true
-		
-		if stars.material_override:
-			stars.material_override.set_shader_param("star_visibility", visibility)
-	else:
-		stars.visible = false
+    if not stars:
+        return
+    
+    if cached_sun_height < -0.1:
+        var visibility = clamp((-cached_sun_height - 0.1) / 0.3, 0.0, 1.0)
+        stars.visible = true
+        
+        if stars.material_override:
+            stars.material_override.set_shader_param("star_visibility", visibility)
+        if player_camera:
+            var t = stars.global_transform
+            t.origin = player_camera.global_transform.origin
+            stars.global_transform = t
+    else:
+        stars.visible = false

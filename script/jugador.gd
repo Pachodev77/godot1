@@ -22,6 +22,8 @@ var camera_zoomed_out = false
 var camera_default_distance = 6.0
 var camera_zoom_distance = 8.0
 var zoom_speed = 10.0
+export var camera_near_min : float = 0.5
+export var camera_near_max : float = 1.5
 
 func _physics_process(delta):
 	# Ajustar la posición de la cámara manualmente (solo si es necesario)
@@ -109,6 +111,11 @@ func _physics_process(delta):
 	if abs(current_distance - target_distance) > 0.01:
 		var new_distance = lerp(current_distance, target_distance, zoom_speed * delta)
 		camera.translation.z = new_distance
+
+	var desired_near = camera_near_max
+	if camera_rotation_x < 0.0:
+		desired_near = camera_near_min
+	camera.near = lerp(camera.near, desired_near, 5.0 * delta)
 
 	for n in cull_targets:
 		if n:
