@@ -110,6 +110,9 @@ func _physics_process(delta):
 		var new_distance = lerp(current_distance, target_distance, zoom_speed * delta)
 		camera.translation.z = new_distance
 
+	if fps_label_node:
+		fps_label_node.text = "FPS: " + str(Engine.get_frames_per_second())
+
 export var mouse_sensitivity : float = 0.003
 export var max_look_up : float = 25.0
 export var max_look_down : float = -30.0
@@ -128,6 +131,7 @@ onready var camera_joystick_node = get_node_or_null("/root/Escena/CanvasLayer/Ma
 onready var zoom_button_node = get_node_or_null("/root/Escena/CanvasLayer/MarginContainer/VBoxContainer/HBoxContainer/CameraJoystickContainer/ButtonContainer/ZoomButton")
 onready var flashlight_button_node = get_node_or_null("/root/Escena/CanvasLayer/MarginContainer/VBoxContainer/HBoxContainer/CameraJoystickContainer/ButtonContainer/FlashlightButton")
 onready var jump_button_node = get_node_or_null("/root/Escena/CanvasLayer/MarginContainer/VBoxContainer/HBoxContainer/JumpButtonContainer/JumpButton")
+var fps_label_node = null
 
 func _ready():
 	# Ajustar la posición inicial de la cámara
@@ -150,6 +154,10 @@ func _ready():
 
 	if jump_button_node:
 		jump_button_node.connect("pressed", self, "_on_JumpButton_pressed")
+
+	fps_label_node = get_node_or_null("/root/Escena/CanvasLayer/FPSLabel")
+	if fps_label_node == null:
+		fps_label_node = get_node_or_null("/root/Escena/ControlUI/FPSLabel")
 	
 	var zoom_button = get_node_or_null("/root/Escena/CanvasLayer/MarginContainer/VBoxContainer/HBoxContainer/CameraJoystickContainer/ButtonContainer/ZoomButton")
 	if zoom_button:
