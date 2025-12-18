@@ -110,12 +110,24 @@ func _physics_process(delta):
 		var new_distance = lerp(current_distance, target_distance, zoom_speed * delta)
 		camera.translation.z = new_distance
 
+	for n in cull_targets:
+		if n:
+			var d = n.global_transform.origin.distance_to(global_transform.origin)
+			if n.visible:
+				if d > cull_far:
+					n.visible = false
+			else:
+				if d < cull_near:
+					n.visible = true
+
 	if fps_label_node:
 		fps_label_node.text = "FPS: " + str(Engine.get_frames_per_second())
 
 export var mouse_sensitivity : float = 0.003
 export var max_look_up : float = 25.0
 export var max_look_down : float = -30.0
+export var cull_near : float = 220.0
+export var cull_far : float = 260.0
 
 onready var pivot = $Pivot
 onready var camera = $Pivot/Camera
@@ -132,6 +144,12 @@ onready var zoom_button_node = get_node_or_null("/root/Escena/CanvasLayer/Margin
 onready var flashlight_button_node = get_node_or_null("/root/Escena/CanvasLayer/MarginContainer/VBoxContainer/HBoxContainer/CameraJoystickContainer/ButtonContainer/FlashlightButton")
 onready var jump_button_node = get_node_or_null("/root/Escena/CanvasLayer/MarginContainer/VBoxContainer/HBoxContainer/JumpButtonContainer/JumpButton")
 var fps_label_node = null
+onready var cull_targets = [
+    get_node_or_null("/root/Escena/Forest"),
+    get_node_or_null("/root/Escena/Forest2"),
+    get_node_or_null("/root/Escena/Forest3"),
+    get_node_or_null("/root/Escena/Forest4")
+]
 
 func _ready():
 	# Ajustar la posición inicial de la cámara
