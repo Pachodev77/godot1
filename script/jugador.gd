@@ -26,11 +26,6 @@ export var camera_near_min : float = 0.5
 export var camera_near_max : float = 1.5
 
 func _physics_process(delta):
-	# Ajustar la posición de la cámara manualmente (solo si es necesario)
-	if abs(camera.transform.origin.y - 2.0) > 0.01:
-		var target_pos = Vector3(0, 2.0, camera.transform.origin.z)
-		camera.transform.origin = camera.transform.origin.linear_interpolate(target_pos, 10.0 * delta)
-		
 	var direction = Vector3.ZERO
 
 	# Obtener la dirección basada en la rotación de la cámara (orbital)
@@ -117,24 +112,39 @@ func _physics_process(delta):
 		desired_near = camera_near_min
 	camera.near = lerp(camera.near, desired_near, 5.0 * delta)
 
-	for n in cull_targets:
-		if n:
-			var d = n.global_transform.origin.distance_to(global_transform.origin)
-			if n.visible:
-				if d > cull_far:
-					n.visible = false
-			else:
-				if d < cull_near:
-					n.visible = true
+	# Optimización: Culling solo cada 0.1 segundos en lugar de cada frame
+	cull_timer += delta
+	if cull_timer >= cull_update_interval:
+		var player_pos = global_transform.origin  # Cachear posición del jugador
+		for n in cull_targets:
+			if n:
+				var d = n.translation.distance_to(player_pos)  # Usar translation en lugar de global_transform
+				if n.visible:
+					if d > cull_far:
+						n.visible = false
+				else:
+					if d < cull_near:
+						n.visible = true
+		cull_timer = 0.0
 
-	if fps_label_node:
-		fps_label_node.text = "FPS: " + str(Engine.get_frames_per_second())
+	# Optimización: Actualizar FPS solo cada 0.5 segundos
+	fps_update_timer += delta
+	if fps_update_timer >= fps_update_interval:
+		if fps_label_node:
+			fps_label_node.text = "FPS: " + str(Engine.get_frames_per_second())
+		fps_update_timer = 0.0
 
 export var mouse_sensitivity : float = 0.003
-export var max_look_up : float = 25.0
-export var max_look_down : float = -30.0
+export var max_look_up : float = 5.0
+export var max_look_down : float = -45.0
 export var cull_near : float = 220.0
 export var cull_far : float = 260.0
+
+# Timers para optimización
+var cull_timer : float = 0.0
+var cull_update_interval : float = 0.1  # Actualizar culling cada 0.1s
+var fps_update_timer : float = 0.0
+var fps_update_interval : float = 0.5  # Actualizar FPS cada 0.5s
 
 onready var pivot = $Pivot
 onready var camera = $Pivot/Camera
@@ -184,17 +194,7 @@ func _ready():
 	if fps_label_node == null:
 		fps_label_node = get_node_or_null("/root/Escena/ControlUI/FPSLabel")
 	
-	var zoom_button = get_node_or_null("/root/Escena/CanvasLayer/MarginContainer/VBoxContainer/HBoxContainer/MoveJoystickContainer/ButtonContainer/ZoomButton")
-	if zoom_button:
-		zoom_button.connect("pressed", self, "_on_ZoomButton_pressed")
-
-	var flashlight_button = get_node_or_null("/root/Escena/CanvasLayer/MarginContainer/VBoxContainer/HBoxContainer/MoveJoystickContainer/ButtonContainer/FlashlightButton")
-	if flashlight_button:
-		flashlight_button.connect("pressed", self, "_on_FlashlightButton_pressed")
-	
-	var jump_button = get_node_or_null("/root/Escena/CanvasLayer/MarginContainer/VBoxContainer/HBoxContainer/CameraJoystickContainer/ButtonContainer/JumpButton")
-	if jump_button:
-		jump_button.connect("pressed", self, "_on_JumpButton_pressed")
+	# ELIMINADO: Conexiones duplicadas de botones (ya se conectan en líneas 174-181)
 
 
 # Joystick signal handlers

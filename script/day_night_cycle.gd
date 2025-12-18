@@ -16,7 +16,7 @@ var sky: ProceduralSky
 # Cache para optimización
 var cached_sun_height = 0.0
 var last_update_time = 0.0
-var update_interval = 0.016  # ~60 FPS
+var update_interval = 0.033  # ~30 FPS (optimizado para móviles)
 var last_sky_phase = -1  # -1=noche, 0=amanecer, 1=día, 2=atardecer
 var last_sun_color = Color(1.0, 1.0, 1.0)
 
@@ -149,13 +149,20 @@ func update_stars():
     
     if cached_sun_height < -0.1:
         var visibility = clamp((-cached_sun_height - 0.1) / 0.3, 0.0, 1.0)
-        stars.visible = true
+        
+        # Solo actualizar si no estaba visible antes (optimización)
+        if not stars.visible:
+            stars.visible = true
         
         if stars.material_override:
             stars.material_override.set_shader_param("star_visibility", visibility)
+        
+        # Solo actualizar posición si la cámara existe y las estrellas están visibles
         if player_camera:
             var t = stars.global_transform
             t.origin = player_camera.global_transform.origin
             stars.global_transform = t
     else:
-        stars.visible = false
+        # Solo ocultar si estaba visible (evitar set innecesario)
+        if stars.visible:
+            stars.visible = false

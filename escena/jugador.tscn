@@ -8,6 +8,8 @@
 [node name="jugador" type="KinematicBody"]
 script = ExtResource( 1 )
 jump_velocity = 15.0
+max_look_up = 5.0
+max_look_down = -45.0
 
 [node name="CollisionShape" type="CollisionShape" parent="."]
 transform = Transform( 0.383165, 0, 0, 0, 0.836219, 0, 0, 0, 0.259529, 0.0379386, 0.785813, 0.0247252 )
