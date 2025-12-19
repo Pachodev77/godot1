@@ -46,7 +46,7 @@ func update_sun_position():
 	var altitude = asin(cached_sun_height)  # [-PI/2, PI/2]
 	var azimuth = t                  # [0, 2PI)
 
-	sun.rotation.x = altitude
+	sun.rotation.x = -altitude
 	sun.rotation.y = azimuth
 
 	if sky:

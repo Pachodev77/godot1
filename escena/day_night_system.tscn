@@ -59,7 +59,7 @@ directional_shadow_depth_range = 0
 directional_shadow_blend_splits = false
 
 [node name="SunVisual" type="MeshInstance" parent="DirectionalLight"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -200 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 200 )
 mesh = SubResource( 5 )
 material_override = SubResource( 4 )
 

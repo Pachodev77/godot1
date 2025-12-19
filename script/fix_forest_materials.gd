@@ -46,11 +46,10 @@ func process_mesh_node(node):
 					should_collide = true
 				
 				if mat is SpatialMaterial:
-					if mat.flags_transparent:
 						var new_mat = mat.duplicate()
-						new_mat.params_depth_draw_mode = SpatialMaterial.DEPTH_DRAW_ALPHA_OPAQUE_PREPASS
+						new_mat.flags_transparent = false
 						new_mat.params_use_alpha_scissor = true
-						new_mat.params_alpha_scissor_threshold = 0.3
+						new_mat.params_alpha_scissor_threshold = 0.5
 						new_mat.params_cull_mode = SpatialMaterial.CULL_DISABLED
 						
 						mesh.surface_set_material(i, new_mat)
