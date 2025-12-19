@@ -1,4 +1,4 @@
-extends Control
+.+extends Control
 
 signal joystick_updated(vector)
 signal joystick_released
