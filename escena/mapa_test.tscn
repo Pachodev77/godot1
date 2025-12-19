@@ -77,5 +77,4 @@ margin_right = 212.0
 [node name="CameraJoystick" parent="CanvasLayer/MarginContainer/VBoxContainer/HBoxContainer/CameraJoystickContainer" index="1"]
 margin_bottom = 264.0
 
-
 [editable path="CanvasLayer"]

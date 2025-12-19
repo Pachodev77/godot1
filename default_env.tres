@@ -6,4 +6,3 @@
 background_mode = 2
 background_sky = SubResource( 1 )
 glow_blend_mode = 0
-

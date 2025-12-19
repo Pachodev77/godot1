@@ -162,10 +162,10 @@ onready var flashlight_button_node = get_node_or_null("/root/Escena/CanvasLayer/
 onready var jump_button_node = get_node_or_null("/root/Escena/CanvasLayer/MarginContainer/VBoxContainer/HBoxContainer/CameraJoystickContainer/ButtonContainer/JumpButton")
 var fps_label_node = null
 onready var cull_targets = [
-    get_node_or_null("/root/Escena/Forest"),
-    get_node_or_null("/root/Escena/Forest2"),
-    get_node_or_null("/root/Escena/Forest3"),
-    get_node_or_null("/root/Escena/Forest4")
+	get_node_or_null("/root/Escena/Forest"),
+	get_node_or_null("/root/Escena/Forest2"),
+	get_node_or_null("/root/Escena/Forest3"),
+	get_node_or_null("/root/Escena/Forest4")
 ]
 
 func _ready():
@@ -211,28 +211,28 @@ func _on_CameraJoystick_released():
 	camera_vector = Vector2.ZERO
 
 func _on_ZoomButton_pressed():
-    camera_zoomed_out = !camera_zoomed_out
+	camera_zoomed_out = !camera_zoomed_out
 
 func _on_FlashlightButton_pressed():
-    if flashlight:
-        flashlight.visible = !flashlight.visible
+	if flashlight:
+		flashlight.visible = !flashlight.visible
 
 func _on_JumpButton_pressed():
-    jump_requested = true
+	jump_requested = true
 
 func _input(event):
-    if event is InputEventScreenTouch:
-        var joystick_active = false
-        if move_joystick_node and move_joystick_node.touch_id != -1:
-            joystick_active = true
-        if camera_joystick_node and camera_joystick_node.touch_id != -1:
-            joystick_active = true
-        if joystick_active:
-            var pos = event.position
-            if event.pressed:
-                if jump_button_node and jump_button_node.get_global_rect().has_point(pos):
-                    _on_JumpButton_pressed()
-                if zoom_button_node and zoom_button_node.get_global_rect().has_point(pos):
-                    _on_ZoomButton_pressed()
-                if flashlight_button_node and flashlight_button_node.get_global_rect().has_point(pos):
-                    _on_FlashlightButton_pressed()
+	if event is InputEventScreenTouch:
+		var joystick_active = false
+		if move_joystick_node and move_joystick_node.touch_id != -1:
+			joystick_active = true
+		if camera_joystick_node and camera_joystick_node.touch_id != -1:
+			joystick_active = true
+		if joystick_active:
+			var pos = event.position
+			if event.pressed:
+				if jump_button_node and jump_button_node.get_global_rect().has_point(pos):
+					_on_JumpButton_pressed()
+				if zoom_button_node and zoom_button_node.get_global_rect().has_point(pos):
+					_on_ZoomButton_pressed()
+				if flashlight_button_node and flashlight_button_node.get_global_rect().has_point(pos):
+					_on_FlashlightButton_pressed()

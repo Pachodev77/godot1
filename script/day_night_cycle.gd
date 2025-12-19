@@ -144,25 +144,25 @@ func update_sky_color():
 		env.ambient_light_energy = 0.8 - t * 0.4
 
 func update_stars():
-    if not stars:
-        return
-    
-    if cached_sun_height < -0.1:
-        var visibility = clamp((-cached_sun_height - 0.1) / 0.3, 0.0, 1.0)
-        
-        # Solo actualizar si no estaba visible antes (optimización)
-        if not stars.visible:
-            stars.visible = true
-        
-        if stars.material_override:
-            stars.material_override.set_shader_param("star_visibility", visibility)
-        
-        # Solo actualizar posición si la cámara existe y las estrellas están visibles
-        if player_camera:
-            var t = stars.global_transform
-            t.origin = player_camera.global_transform.origin
-            stars.global_transform = t
-    else:
-        # Solo ocultar si estaba visible (evitar set innecesario)
-        if stars.visible:
-            stars.visible = false
+	if not stars:
+		return
+	
+	if cached_sun_height < -0.1:
+		var visibility = clamp((-cached_sun_height - 0.1) / 0.3, 0.0, 1.0)
+		
+		# Solo actualizar si no estaba visible antes (optimización)
+		if not stars.visible:
+			stars.visible = true
+		
+		if stars.material_override:
+			stars.material_override.set_shader_param("star_visibility", visibility)
+		
+		# Solo actualizar posición si la cámara existe y las estrellas están visibles
+		if player_camera:
+			var t = stars.global_transform
+			t.origin = player_camera.global_transform.origin
+			stars.global_transform = t
+	else:
+		# Solo ocultar si estaba visible (evitar set innecesario)
+		if stars.visible:
+			stars.visible = false
