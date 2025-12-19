@@ -2,6 +2,7 @@ extends Spatial
 
 # Cache processed materials to avoid duplication explosion
 var material_cache = {}
+var shape_cache = {}
 var nodes_to_process = []
 var current_index = 0
 var nodes_per_frame = 5 # Increased slightly as logic is now lighter
@@ -70,11 +71,7 @@ func process_mesh_node(node):
 		if mat is SpatialMaterial:
 			# Check cache first
 			if material_cache.has(mat):
-				# Apply cached fixed material
 				var cached_mat = material_cache[mat]
-				# Apply to the node override to ensure it takes precedence without modifying shared mesh source (optional choice)
-				# Or modify the mesh itself? Modifying mesh affects all instances sharing it. 
-				# Safest for instances is to set the surface material on the node.
 				node.set_surface_material(i, cached_mat)
 			else:
 				# Create new fixed material
@@ -106,4 +103,24 @@ func process_mesh_node(node):
 				break
 		
 		if not has_collision:
-			node.create_trimesh_collision()
+			# PHYSICS OPTIMIZATION: Cache collision shapes based on Mesh resource
+			# This prevents creating unique ConcavePolygonShape for every instance (huge memory saving)
+			if shape_cache.has(mesh):
+				_create_collision_from_cache(node, shape_cache[mesh])
+			else:
+				# Create valid Trimesh shape (most accurate for trees) or Convex (lighter but approximate)
+				# Using Trimesh as it is standard, but now cached it is safe.
+				var shape = mesh.create_trimesh_shape()
+				if shape:
+					shape_cache[mesh] = shape
+					_create_collision_from_cache(node, shape)
+					print("Physics Shape Cached for Mesh: ", mesh.resource_name)
+
+func _create_collision_from_cache(node, shape):
+	var sb = StaticBody.new()
+	var cs = CollisionShape.new()
+	cs.shape = shape
+	sb.add_child(cs)
+	node.add_child(sb)
+	# Set owner to allow manual scene saving if needed, but mostly internal
+

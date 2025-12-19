@@ -62,7 +62,7 @@ common/enable_pause_aware_picking=true
 
 quality/driver/fallback_to_gles2=true
 vram_compression/import_etc=true
-quality/directional_shadow/size=2048
+quality/directional_shadow/size=1024
 quality/shading/force_lambert_over_burley=true
 quality/shading/force_blinn_over_ggx=true
 environment/default_environment="res://default_env.tres"

@@ -61,10 +61,47 @@ margin_right = 212.0
 margin_top = 104.0
 margin_bottom = 304.0
 
-[node name="CenterSpacer" parent="CanvasLayer/MarginContainer/VBoxContainer/HBoxContainer" index="1"]
+[node name="StackExtraL" parent="CanvasLayer/MarginContainer/VBoxContainer/HBoxContainer" index="1"]
+margin_left = 260.0
+margin_right = 370.0
 margin_bottom = 304.0
 
-[node name="CameraJoystickContainer" parent="CanvasLayer/MarginContainer/VBoxContainer/HBoxContainer" index="2"]
+[node name="ExtraBtnL1" parent="CanvasLayer/MarginContainer/VBoxContainer/HBoxContainer/StackExtraL" index="0"]
+margin_top = 54.0
+margin_bottom = 134.0
+
+[node name="ExtraBtnL2" parent="CanvasLayer/MarginContainer/VBoxContainer/HBoxContainer/StackExtraL" index="1"]
+margin_top = 139.0
+margin_bottom = 219.0
+
+[node name="ExtraBtnL3" parent="CanvasLayer/MarginContainer/VBoxContainer/HBoxContainer/StackExtraL" index="2"]
+margin_top = 224.0
+margin_bottom = 304.0
+
+[node name="CenterSpacer" parent="CanvasLayer/MarginContainer/VBoxContainer/HBoxContainer" index="2"]
+margin_left = 370.0
+margin_bottom = 304.0
+
+[node name="StackExtraR" parent="CanvasLayer/MarginContainer/VBoxContainer/HBoxContainer" index="3"]
+margin_left = 554.0
+margin_right = 664.0
+margin_bottom = 304.0
+
+[node name="ExtraBtnR1" parent="CanvasLayer/MarginContainer/VBoxContainer/HBoxContainer/StackExtraR" index="0"]
+margin_top = 54.0
+margin_bottom = 134.0
+
+[node name="ExtraBtnR2" parent="CanvasLayer/MarginContainer/VBoxContainer/HBoxContainer/StackExtraR" index="1"]
+margin_top = 139.0
+margin_bottom = 219.0
+
+[node name="ExtraBtnR3" parent="CanvasLayer/MarginContainer/VBoxContainer/HBoxContainer/StackExtraR" index="2"]
+margin_top = 224.0
+margin_bottom = 304.0
+
+[node name="CameraJoystickContainer" parent="CanvasLayer/MarginContainer/VBoxContainer/HBoxContainer" index="4"]
+margin_left = 664.0
+margin_right = 924.0
 margin_bottom = 304.0
 
 [node name="ActionButton" parent="CanvasLayer/MarginContainer/VBoxContainer/HBoxContainer/CameraJoystickContainer/ButtonContainer" index="0"]

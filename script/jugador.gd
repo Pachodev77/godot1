@@ -18,9 +18,10 @@ var camera_vector = Vector2.ZERO
 var jump_requested = false
 
 # Camera zoom variables
-var camera_zoomed_out = false
+var camera_mode = 0 # 0: Default, 1: Zoomed Out, 2: First Person
 var camera_default_distance = 3.5
 var camera_zoom_distance = 5.5
+var camera_first_person_distance = 0.0
 var zoom_speed = 10.0
 export var camera_near_min : float = 0.5
 export var camera_near_max : float = 1.5
@@ -101,11 +102,26 @@ func _physics_process(delta):
 		pivot.rotation.x = camera_rotation_x
 	
 	# Camera zoom (solo actualizar si hay diferencia)
-	var target_distance = camera_zoom_distance if camera_zoomed_out else camera_default_distance
+	var target_distance = camera_default_distance
+	if camera_mode == 1:
+		target_distance = camera_zoom_distance
+	elif camera_mode == 2:
+		target_distance = camera_first_person_distance
+
 	var current_distance = camera.translation.z
 	if abs(current_distance - target_distance) > 0.01:
 		var new_distance = lerp(current_distance, target_distance, zoom_speed * delta)
 		camera.translation.z = new_distance
+	else:
+		camera.translation.z = target_distance
+	
+	# Gestionar visibilidad del robot en primera persona
+	if camera_mode == 2:
+		if robot_model.visible:
+			robot_model.visible = false
+	else:
+		if !robot_model.visible:
+			robot_model.visible = true
 
 	var desired_near = camera_near_max
 	if camera_rotation_x < 0.0:
@@ -211,7 +227,9 @@ func _on_CameraJoystick_released():
 	camera_vector = Vector2.ZERO
 
 func _on_ZoomButton_pressed():
-	camera_zoomed_out = !camera_zoomed_out
+	camera_mode += 1
+	if camera_mode > 2:
+		camera_mode = 0
 
 func _on_FlashlightButton_pressed():
 	if flashlight:
