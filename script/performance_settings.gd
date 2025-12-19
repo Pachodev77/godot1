@@ -27,7 +27,7 @@ func _ready():
 		$SettingsPanel/VBoxContainer/GridContainer/DayNightToggle.pressed = day_night_system.is_processing()
 
 func _on_setup_pressed():
-	panel.show()
+	panel.visible = !panel.visible
 
 func _on_close_pressed():
 	panel.hide()
