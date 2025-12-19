@@ -5,8 +5,6 @@ var velocidad = Vector3()
 export var speed : float = 6.0
 export var jump_velocity : float = 4.5
 var gravity = 20.0  # Gravedad
-var jump_delay_timer : float = 0.0 # Temporizador para el retraso del salto
-const JUMP_DELAY : float = 1.0 # Retraso de 1 segundoo
 
 var anim = ""
 var on_ground = false
@@ -63,19 +61,8 @@ func _physics_process(delta):
 	velocidad.y -= gravity * delta
 	
 	var snap = Vector3.DOWN
-	
 	if is_on_floor():
 		if jump_requested or Input.is_action_just_pressed("tecla_salto"):
-			if jump_delay_timer <= 0:
-				jump_delay_timer = JUMP_DELAY
-				# Forzar animación de salto inmediatamente
-				anim = "Jump"
-				if animation_player:
-					animation_player.play(anim)
-	
-	if jump_delay_timer > 0:
-		jump_delay_timer -= delta
-		if jump_delay_timer <= 0:
 			velocidad.y = jump_velocity
 			snap = Vector3.ZERO
 	
@@ -91,18 +78,16 @@ func _physics_process(delta):
 	var horizontal_velocity = Vector2(velocidad.x, velocidad.z)
 	var is_moving = horizontal_velocity.length() > 0.2
 	
-	if jump_delay_timer > 0:
-		anim = "Jump"
-	elif on_ground:
+	if on_ground:
 		if is_moving:
-			anim = "Running"
+			anim = "Run-loop"
 		else:
-			anim = "Idle"
+			anim = "Idle-loop"
 	else:
 		anim = "Jump"
 
 	# Solo cambiar animación si es diferente
-	if animation_player and animation_player.current_animation != anim:
+	if animation_player.current_animation != anim:
 		animation_player.play(anim)
 
 	# Joystick camera rotation (orbital)
@@ -163,9 +148,9 @@ var fps_update_interval : float = 0.5  # Actualizar FPS cada 0.5s
 
 onready var pivot = $Pivot
 onready var camera = $Pivot/Camera
-onready var flashlight = $"AJ/SpotLight"
-onready var robot_model = $"AJ"
-var animation_player: AnimationPlayer
+onready var flashlight = $"3DGodotRobot/SpotLight"
+onready var robot_model = $"3DGodotRobot"
+onready var animation_player = $"3DGodotRobot/AnimationPlayer"
 
 var camera_rotation_x := 0.0
 
@@ -183,26 +168,7 @@ onready var cull_targets = [
 	get_node_or_null("/root/Escena/Forest4")
 ]
 
-func _find_animation_player(node):
-	if node is AnimationPlayer:
-		return node
-	for child in node.get_children():
-		var found = _find_animation_player(child)
-		if found:
-			return found
-	return null
-
 func _ready():
-	animation_player = _find_animation_player(robot_model)
-	if animation_player:
-		print("AnimationPlayer encontrado: ", animation_player.get_path())
-	else:
-		print("ERROR: No se encontró AnimationPlayer en el modelo")
-	
-	if robot_model:
-		print("Modelo AJ cargado. Scale: ", robot_model.scale, " Visible: ", robot_model.visible)
-		print("Global Transform: ", robot_model.global_transform.origin)
-	
 	# Ajustar la posición inicial de la cámara
 	pivot.transform.origin.y = 2.0  # Ajustar altura del pivot
 	camera.transform.origin.y = 0.0  # Asegurar que la cámara esté alineada con el pivot
@@ -228,31 +194,6 @@ func _ready():
 	if fps_label_node == null:
 		fps_label_node = get_node_or_null("/root/Escena/ControlUI/FPSLabel")
 	
-	_import_animations()
-
-func _import_animations():
-	var anim_files = {
-		"Idle": "res://avatar/animations/Idle.fbx",
-		"Running": "res://avatar/animations/Running.fbx",
-		"Jump": "res://avatar/animations/Jump.fbx"
-	}
-	
-	for anim_name in anim_files:
-		var path = anim_files[anim_name]
-		var anim_scene = load(path)
-		if anim_scene:
-			var instance = anim_scene.instance()
-			var ap = _find_animation_player(instance)
-			if ap:
-				var anim_list = ap.get_animation_list()
-				if anim_list.size() > 0:
-					var internal_anim_name = anim_list[0]
-					var anim_data = ap.get_animation(internal_anim_name)
-					if animation_player:
-						animation_player.add_animation(anim_name, anim_data)
-						print("Importada animación: ", anim_name)
-			instance.queue_free()
-
 	# ELIMINADO: Conexiones duplicadas de botones (ya se conectan en líneas 174-181)
 
 

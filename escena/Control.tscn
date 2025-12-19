@@ -1,7 +1,10 @@
-[gd_scene load_steps=11 format=2]
+[gd_scene load_steps=13 format=2]
 
 [ext_resource path="res://escena/joystick.tscn" type="PackedScene" id=1]
 [ext_resource path="res://script/performance_settings.gd" type="Script" id=8]
+
+[sub_resource type="RectangleShape2D" id=1]
+extents = Vector2( 50, 40 )
 
 [sub_resource type="StyleBoxFlat" id=2]
 bg_color = Color( 1, 1, 1, 1 )
@@ -76,7 +79,31 @@ corner_radius_bottom_right = 15
 corner_radius_bottom_left = 15
 
 [sub_resource type="StyleBoxFlat" id=11]
+bg_color = Color( 0.3, 0.3, 0.3, 1 )
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color( 1, 1, 1, 1 )
+corner_radius_top_left = 15
+corner_radius_top_right = 15
+corner_radius_bottom_right = 15
+corner_radius_bottom_left = 15
+
+[sub_resource type="StyleBoxFlat" id=12]
 bg_color = Color( 0.4, 0.4, 0.4, 1 )
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color( 1, 1, 1, 1 )
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id=13]
+bg_color = Color( 0.2, 0.2, 0.2, 1 )
 border_width_left = 2
 border_width_top = 2
 border_width_right = 2
@@ -108,7 +135,9 @@ script = ExtResource( 8 )
 
 [node name="FPSLabel" type="Label" parent="."]
 anchor_left = 1.0
+anchor_top = 0.0
 anchor_right = 1.0
+anchor_bottom = 0.0
 margin_left = -140.0
 margin_top = 10.0
 margin_right = -30.0
@@ -117,14 +146,15 @@ rect_min_size = Vector2( 110, 20 )
 text = "FPS: 0"
 align = 2
 valign = 1
+mouse_filter = 2
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
 [node name="MarginContainer" type="MarginContainer" parent="."]
+mouse_filter = 1
 anchor_right = 1.0
 anchor_bottom = 1.0
-mouse_filter = 1
 custom_constants/margin_right = 50
 custom_constants/margin_top = 50
 custom_constants/margin_left = 50
@@ -138,18 +168,18 @@ margin_bottom = 550.0
 
 [node name="TopSpacer" type="Control" parent="MarginContainer/VBoxContainer"]
 margin_right = 924.0
-margin_bottom = 192.0
+margin_bottom = 346.0
 size_flags_vertical = 3
 
 [node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
-margin_top = 196.0
+margin_top = 350.0
 margin_right = 924.0
 margin_bottom = 500.0
 rect_min_size = Vector2( 0, 150 )
 
 [node name="MoveJoystickContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/HBoxContainer"]
 margin_right = 260.0
-margin_bottom = 304.0
+margin_bottom = 150.0
 rect_min_size = Vector2( 260, 200 )
 
 [node name="ButtonContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer/HBoxContainer/MoveJoystickContainer"]
@@ -158,21 +188,21 @@ margin_bottom = 100.0
 alignment = 1
 
 [node name="ZoomButton" type="Button" parent="MarginContainer/VBoxContainer/HBoxContainer/MoveJoystickContainer/ButtonContainer"]
-margin_left = 48.0
-margin_right = 128.0
+margin_left = 46.0
+margin_right = 126.0
 margin_bottom = 100.0
 rect_min_size = Vector2( 80, 100 )
-custom_styles/hover = SubResource( 4 )
+custom_styles/hover = SubResource( 2 )
 custom_styles/pressed = SubResource( 3 )
 custom_styles/normal = SubResource( 4 )
 text = "ZOOM"
 
 [node name="FlashlightButton" type="Button" parent="MarginContainer/VBoxContainer/HBoxContainer/MoveJoystickContainer/ButtonContainer"]
-margin_left = 132.0
-margin_right = 212.0
+margin_left = 134.0
+margin_right = 214.0
 margin_bottom = 100.0
 rect_min_size = Vector2( 80, 100 )
-custom_styles/hover = SubResource( 5 )
+custom_styles/hover = SubResource( 2 )
 custom_styles/pressed = SubResource( 3 )
 custom_styles/normal = SubResource( 5 )
 text = "LINTERNA"
@@ -180,22 +210,22 @@ text = "LINTERNA"
 [node name="MoveJoystick" parent="MarginContainer/VBoxContainer/HBoxContainer/MoveJoystickContainer" instance=ExtResource( 1 )]
 anchor_right = 0.0
 anchor_bottom = 0.0
-margin_top = 104.0
+margin_top = 64.0
 margin_right = 260.0
-margin_bottom = 304.0
+margin_bottom = 185.0
 rect_min_size = Vector2( 260, 200 )
 size_flags_vertical = 3
 
 [node name="CenterSpacer" type="Control" parent="MarginContainer/VBoxContainer/HBoxContainer"]
 margin_left = 264.0
 margin_right = 660.0
-margin_bottom = 304.0
+margin_bottom = 185.0
 size_flags_horizontal = 3
 
 [node name="CameraJoystickContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/HBoxContainer"]
 margin_left = 664.0
 margin_right = 924.0
-margin_bottom = 304.0
+margin_bottom = 185.0
 rect_min_size = Vector2( 260, 200 )
 
 [node name="ButtonContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer/HBoxContainer/CameraJoystickContainer"]
@@ -204,24 +234,24 @@ margin_bottom = 100.0
 alignment = 1
 
 [node name="ActionButton" type="Button" parent="MarginContainer/VBoxContainer/HBoxContainer/CameraJoystickContainer/ButtonContainer"]
-margin_left = 48.0
-margin_right = 128.0
+margin_left = 46.0
+margin_right = 126.0
 margin_bottom = 100.0
 rect_min_size = Vector2( 80, 100 )
-custom_styles/hover = SubResource( 6 )
+custom_styles/hover = SubResource( 2 )
 custom_styles/pressed = SubResource( 3 )
 custom_styles/normal = SubResource( 6 )
 text = "ACTION"
 
 [node name="JumpButton" type="Button" parent="MarginContainer/VBoxContainer/HBoxContainer/CameraJoystickContainer/ButtonContainer"]
-margin_left = 132.0
-margin_right = 212.0
+margin_left = 134.0
+margin_right = 214.0
 margin_bottom = 100.0
 rect_min_size = Vector2( 80, 100 )
 custom_colors/font_color = Color( 1, 1, 1, 1 )
 custom_colors/font_color_hover = Color( 1, 1, 0.8, 1 )
 custom_colors/font_color_pressed = Color( 0.9, 0.9, 0.9, 1 )
-custom_styles/hover = SubResource( 7 )
+custom_styles/hover = SubResource( 2 )
 custom_styles/pressed = SubResource( 3 )
 custom_styles/normal = SubResource( 7 )
 text = "SALTAR"
@@ -229,22 +259,24 @@ text = "SALTAR"
 [node name="CameraJoystick" parent="MarginContainer/VBoxContainer/HBoxContainer/CameraJoystickContainer" instance=ExtResource( 1 )]
 anchor_right = 0.0
 anchor_bottom = 0.0
-margin_top = 104.0
+margin_top = 64.0
 margin_right = 260.0
-margin_bottom = 304.0
+margin_bottom = 185.0
 rect_min_size = Vector2( 260, 200 )
 size_flags_vertical = 3
 
 [node name="SetupButton" type="Button" parent="."]
 anchor_left = 1.0
+anchor_top = 0.0
 anchor_right = 1.0
-margin_left = -90.0
+anchor_bottom = 0.0
+margin_left = -110.0
 margin_top = 45.0
 margin_right = -30.0
-margin_bottom = 105.0
-rect_min_size = Vector2( 60, 60 )
-custom_styles/hover = SubResource( 11 )
-custom_styles/pressed = SubResource( 3 )
+margin_bottom = 85.0
+rect_min_size = Vector2( 80, 40 )
+custom_styles/hover = SubResource( 12 )
+custom_styles/pressed = SubResource( 13 )
 custom_styles/normal = SubResource( 11 )
 text = "SETUP"
 __meta__ = {
@@ -258,9 +290,9 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 margin_left = -150.0
-margin_top = -180.0
+margin_top = -100.0
 margin_right = 150.0
-margin_bottom = 20.0
+margin_bottom = 100.0
 rect_min_size = Vector2( 300, 200 )
 custom_styles/panel = SubResource( 10 )
 __meta__ = {
@@ -307,24 +339,24 @@ margin_bottom = 67.0
 size_flags_horizontal = 3
 text = "Dia y Noche"
 
-[node name="StarsToggle" type="CheckButton" parent="SettingsPanel/VBoxContainer/GridContainer"]
+[node name="DayNightToggle" type="CheckButton" parent="SettingsPanel/VBoxContainer/GridContainer"]
 margin_left = 216.0
 margin_top = 50.0
 margin_right = 292.0
 margin_bottom = 90.0
 
 [node name="Spacer" type="Control" parent="SettingsPanel/VBoxContainer"]
-margin_top = 105.0
+margin_top = 134.0
 margin_right = 292.0
-margin_bottom = 143.0
+margin_bottom = 137.0
 size_flags_vertical = 3
 
 [node name="CloseButton" type="Button" parent="SettingsPanel/VBoxContainer"]
-margin_top = 252.0
+margin_top = 152.0
 margin_right = 292.0
-margin_bottom = 292.0
+margin_bottom = 192.0
 rect_min_size = Vector2( 0, 40 )
-custom_styles/hover = SubResource( 7 )
+custom_styles/hover = SubResource( 2 )
 custom_styles/pressed = SubResource( 3 )
 custom_styles/normal = SubResource( 7 )
 text = "CERRAR"
