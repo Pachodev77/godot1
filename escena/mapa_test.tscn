@@ -40,41 +40,4 @@ transform = Transform( 0.996237, 0, 0.0866662, 0, 1, 0, -0.0866662, 0, 0.996237,
 
 [node name="CanvasLayer" parent="." instance=ExtResource( 5 )]
 
-[node name="TopSpacer" parent="CanvasLayer/MarginContainer/VBoxContainer" index="0"]
-margin_bottom = 232.0
-
-[node name="HBoxContainer" parent="CanvasLayer/MarginContainer/VBoxContainer" index="1"]
-margin_top = 236.0
-
-[node name="MoveJoystickContainer" parent="CanvasLayer/MarginContainer/VBoxContainer/HBoxContainer" index="0"]
-margin_bottom = 264.0
-
-[node name="ZoomButton" parent="CanvasLayer/MarginContainer/VBoxContainer/HBoxContainer/MoveJoystickContainer/ButtonContainer" index="0"]
-margin_left = 48.0
-margin_right = 128.0
-
-[node name="FlashlightButton" parent="CanvasLayer/MarginContainer/VBoxContainer/HBoxContainer/MoveJoystickContainer/ButtonContainer" index="1"]
-margin_left = 132.0
-margin_right = 212.0
-
-[node name="MoveJoystick" parent="CanvasLayer/MarginContainer/VBoxContainer/HBoxContainer/MoveJoystickContainer" index="1"]
-margin_bottom = 264.0
-
-[node name="CenterSpacer" parent="CanvasLayer/MarginContainer/VBoxContainer/HBoxContainer" index="1"]
-margin_bottom = 264.0
-
-[node name="CameraJoystickContainer" parent="CanvasLayer/MarginContainer/VBoxContainer/HBoxContainer" index="2"]
-margin_bottom = 264.0
-
-[node name="ActionButton" parent="CanvasLayer/MarginContainer/VBoxContainer/HBoxContainer/CameraJoystickContainer/ButtonContainer" index="0"]
-margin_left = 48.0
-margin_right = 128.0
-
-[node name="JumpButton" parent="CanvasLayer/MarginContainer/VBoxContainer/HBoxContainer/CameraJoystickContainer/ButtonContainer" index="1"]
-margin_left = 132.0
-margin_right = 212.0
-
-[node name="CameraJoystick" parent="CanvasLayer/MarginContainer/VBoxContainer/HBoxContainer/CameraJoystickContainer" index="1"]
-margin_bottom = 264.0
-
 [editable path="CanvasLayer"]
