@@ -19,8 +19,8 @@ var jump_requested = false
 
 # Camera zoom variables
 var camera_zoomed_out = false
-var camera_default_distance = 6.0
-var camera_zoom_distance = 8.0
+var camera_default_distance = 3.5
+var camera_zoom_distance = 5.5
 var zoom_speed = 10.0
 export var camera_near_min : float = 0.5
 export var camera_near_max : float = 1.5

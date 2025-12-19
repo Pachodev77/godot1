@@ -27,10 +27,14 @@ func _initialize():
 
 func _update_from_local(local_pos):
 	var offset = local_pos - base_center
-	if offset.length() > max_distance:
-		offset = offset.normalized() * max_distance
+	
+	# Clamping cuadrado independiente por eje
+	offset.x = clamp(offset.x, -max_distance, max_distance)
+	offset.y = clamp(offset.y, -max_distance, max_distance)
+	
 	if stick:
 		stick.rect_position = base_center + offset - stick.rect_size / 2
+	
 	var output = offset / max_distance
 	if output.distance_to(last_output) > 0.01:
 		emit_signal("joystick_updated", output)
