@@ -1,0 +1,48 @@
+[gd_scene load_steps=6 format=2]
+
+[ext_resource path="res://script/enemigo_saltarin.gd" type="Script" id=1]
+
+[sub_resource type="SpatialMaterial" id=1]
+albedo_color = Color( 0.8, 0.1, 0.1, 1 )
+metallic = 0.5
+roughness = 0.2
+emission_enabled = true
+emission = Color( 0.9, 0.2, 0.1, 1 )
+emission_energy = 5.0
+
+[sub_resource type="SpatialMaterial" id=2]
+albedo_color = Color( 0, 0, 0, 1 )
+metallic = 0.8
+roughness = 0.1
+
+[sub_resource type="SphereShape" id=3]
+radius = 0.4
+
+[node name="EnemigoSaltarin" type="KinematicBody"]
+script = ExtResource( 1 )
+jump_interval = 0.8
+
+[node name="MeshInstance" type="Spatial" parent="."]
+
+[node name="Cuerpo" type="CSGSphere" parent="MeshInstance"]
+radius = 0.8
+radial_segments = 24
+rings = 16
+material = SubResource( 1 )
+
+[node name="OjoL" type="CSGBox" parent="MeshInstance/Cuerpo"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -0.15, 0.15, 0.3 )
+width = 0.1
+height = 0.15
+depth = 0.1
+material = SubResource( 2 )
+
+[node name="OjoR" type="CSGBox" parent="MeshInstance/Cuerpo"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.15, 0.15, 0.3 )
+width = 0.1
+height = 0.15
+depth = 0.1
+material = SubResource( 2 )
+
+[node name="CollisionShape" type="CollisionShape" parent="."]
+shape = SubResource( 3 )

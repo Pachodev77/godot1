@@ -234,6 +234,7 @@ onready var cull_targets = [
 ]
 
 func _ready():
+	add_to_group("jugador")
 	# Ajustar la posición inicial de la cámara
 	pivot.transform.origin.y = 2.0  # Ajustar altura del pivot
 	camera.transform.origin.y = 0.0  # Asegurar que la cámara esté alineada con el pivot
