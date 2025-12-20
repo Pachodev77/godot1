@@ -16,7 +16,18 @@ transform = Transform( 0.383165, 0, 0, 0, 0.836219, 0, 0, 0, 0.259529, 0.0379386
 shape = SubResource( 1 )
 
 [node name="Pivot" type="Spatial" parent="."]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.0, 0 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0 )
+
+[node name="SpotLight" type="SpotLight" parent="Pivot"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )
+light_color = Color( 1, 1, 1, 1 )
+light_energy = 2.0
+spot_range = 25.0
+spot_angle = 45.0
+spot_attenuation = 0.5
+shadow_enabled = true
+shadow_bias = 0.4
+visible = false
 
 [node name="Camera" type="Camera" parent="Pivot"]
 transform = Transform( 1, 0, 0, 0, 0.965926, 0.258819, 0, -0.258819, 0.965926, 0, 0, 3.5 )

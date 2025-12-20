@@ -3,6 +3,9 @@ extends KinematicBody
 #--- Movement Settings ---
 var velocidad = Vector3()
 export var speed : float = 6.0
+
+export var sprint_speed : float = 12.0
+export var jetpack_speed : float = 8.0
 export var jump_velocity : float = 4.5
 var gravity = 20.0  # Gravedad
 
@@ -16,6 +19,10 @@ var altura = 0
 var move_vector = Vector2.ZERO
 var camera_vector = Vector2.ZERO
 var jump_requested = false
+var is_attacking = false
+var is_sprinting = false
+var is_jetpacking = false
+var is_jumping = false
 
 # Camera zoom variables
 var camera_mode = 0 # 0: Default, 1: Zoomed Out, 2: First Person
@@ -55,17 +62,29 @@ func _physics_process(delta):
 		robot_model.rotation.y += angle_diff * 0.15
 
 	# Movimiento horizontal
-	velocidad.x = direction.x * speed
-	velocidad.z = direction.z * speed
+	var current_speed = speed
+	if is_sprinting:
+		current_speed = sprint_speed
+	
+	velocidad.x = direction.x * current_speed
+	velocidad.z = direction.z * current_speed
 
 	# Gravedad y Salto
-	velocidad.y -= gravity * delta
+	if is_jetpacking:
+		velocidad.y = jetpack_speed
+	else:
+		velocidad.y -= gravity * delta
 	
 	var snap = Vector3.DOWN
-	if is_on_floor():
+	if is_jetpacking:
+		snap = Vector3.ZERO
+		is_jumping = false
+	elif is_on_floor():
+		is_jumping = false
 		if jump_requested or Input.is_action_just_pressed("tecla_salto"):
 			velocidad.y = jump_velocity
 			snap = Vector3.ZERO
+			is_jumping = true
 	
 	jump_requested = false
 	
@@ -79,13 +98,28 @@ func _physics_process(delta):
 	var horizontal_velocity = Vector2(velocidad.x, velocidad.z)
 	var is_moving = horizontal_velocity.length() > 0.2
 	
-	if on_ground:
+	if is_attacking:
+		anim = "Attack"
+	elif is_jetpacking:
+		anim = "Idle-loop"
+	elif on_ground:
 		if is_moving:
-			anim = "Run-loop"
+			if is_sprinting:
+				# Use existing Run loop but maybe faster if we had separate animation
+				anim = "Run-loop"
+				animation_player.playback_speed = 1.5
+			else:
+				anim = "Run-loop"
+				animation_player.playback_speed = 1.0
 		else:
 			anim = "Idle-loop"
+			animation_player.playback_speed = 1.0
 	else:
-		anim = "Jump"
+		if is_jumping and velocidad.y > 0:
+			anim = "Jump"
+		else:
+			anim = "Idle-loop"
+			animation_player.playback_speed = 1.0
 
 	# Solo cambiar animación si es diferente
 	if animation_player.current_animation != anim:
@@ -176,7 +210,7 @@ var fps_update_interval : float = 0.5  # Actualizar FPS cada 0.5s
 
 onready var pivot = $Pivot
 onready var camera = $Pivot/Camera
-onready var flashlight = $"RobotProcedural/SpotLight"
+onready var flashlight = $"Pivot/SpotLight"
 onready var robot_model = $"RobotProcedural"
 onready var animation_player = $"RobotProcedural/AnimationPlayer"
 
@@ -188,6 +222,9 @@ onready var camera_joystick_node = get_node_or_null("/root/Escena/CanvasLayer/Ma
 onready var zoom_button_node = get_node_or_null("/root/Escena/CanvasLayer/MarginContainer/VBoxContainer/HBoxContainer/MoveJoystickContainer/ButtonContainer/ZoomButton")
 onready var flashlight_button_node = get_node_or_null("/root/Escena/CanvasLayer/MarginContainer/VBoxContainer/HBoxContainer/MoveJoystickContainer/ButtonContainer/FlashlightButton")
 onready var jump_button_node = get_node_or_null("/root/Escena/CanvasLayer/MarginContainer/VBoxContainer/HBoxContainer/CameraJoystickContainer/ButtonContainer/JumpButton")
+onready var action_button_node = get_node_or_null("/root/Escena/CanvasLayer/MarginContainer/VBoxContainer/HBoxContainer/CameraJoystickContainer/ButtonContainer/ActionButton")
+onready var r1_button_node = get_node_or_null("/root/Escena/CanvasLayer/MarginContainer/VBoxContainer/HBoxContainer/StackExtraR/ExtraBtnR1")
+onready var r3_button_node = get_node_or_null("/root/Escena/CanvasLayer/MarginContainer/VBoxContainer/HBoxContainer/StackExtraR/ExtraBtnR3")
 var fps_label_node = null
 onready var cull_targets = [
 	get_node_or_null("/root/Escena/Forest"),
@@ -217,6 +254,19 @@ func _ready():
 
 	if jump_button_node:
 		jump_button_node.connect("pressed", self, "_on_JumpButton_pressed")
+
+	if action_button_node:
+		action_button_node.connect("pressed", self, "_on_ActionButton_pressed")
+
+	if r3_button_node:
+		r3_button_node.connect("button_down", self, "_on_R3Button_down")
+		r3_button_node.connect("button_up", self, "_on_R3Button_up")
+
+	if r1_button_node:
+		r1_button_node.connect("button_down", self, "_on_R1Button_down")
+		r1_button_node.connect("button_up", self, "_on_R1Button_up")
+
+	animation_player.connect("animation_finished", self, "_on_animation_finished")
 
 	fps_label_node = get_node_or_null("/root/Escena/CanvasLayer/FPSLabel")
 	if fps_label_node == null:
@@ -255,6 +305,32 @@ func _on_FlashlightButton_pressed():
 func _on_JumpButton_pressed():
 	jump_requested = true
 
+func _on_ActionButton_pressed():
+	if !is_attacking:
+		is_attacking = true
+		animation_player.play("Attack")
+
+func _on_R3Button_down():
+	is_sprinting = true
+
+func _on_R3Button_up():
+	is_sprinting = false
+
+func _on_R1Button_down():
+	is_jetpacking = true
+	if robot_model.has_method("set_jetpack_emission"):
+		robot_model.set_jetpack_emission(true)
+
+func _on_R1Button_up():
+	is_jetpacking = false
+	if robot_model.has_method("set_jetpack_emission"):
+		robot_model.set_jetpack_emission(false)
+
+func _on_animation_finished(anim_name):
+	if anim_name == "Attack":
+		is_attacking = false
+		animation_player.playback_speed = 1.0
+
 func _input(event):
 	if event is InputEventScreenTouch:
 		var joystick_active = false
@@ -267,7 +343,19 @@ func _input(event):
 			if event.pressed:
 				if jump_button_node and jump_button_node.get_global_rect().has_point(pos):
 					_on_JumpButton_pressed()
+				if action_button_node and action_button_node.get_global_rect().has_point(pos):
+					_on_ActionButton_pressed()
+				if r1_button_node and r1_button_node.get_global_rect().has_point(pos):
+					_on_R1Button_down()
+				if r3_button_node and r3_button_node.get_global_rect().has_point(pos):
+					_on_R3Button_down()
 				if zoom_button_node and zoom_button_node.get_global_rect().has_point(pos):
 					_on_ZoomButton_pressed()
 				if flashlight_button_node and flashlight_button_node.get_global_rect().has_point(pos):
 					_on_FlashlightButton_pressed()
+			elif !event.pressed:
+				# Check releases for buttons that need hold interaction
+				if r3_button_node and r3_button_node.get_global_rect().has_point(pos):
+					_on_R3Button_up()
+				if r1_button_node and r1_button_node.get_global_rect().has_point(pos):
+					_on_R1Button_up()

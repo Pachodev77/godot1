@@ -11,6 +11,7 @@ var initial_y : float = 0.0
 var time_passed : float = 0.0
 var is_collected : bool = false
 var fade_timer : float = 0.0
+export var is_ui_icon : bool = false
 
 # Referencias
 onready var mesh_instance = $MeshInstance
@@ -19,7 +20,8 @@ onready var collision_shape = $CollisionShape
 func _ready():
 	initial_y = translation.y
 	generate_diamond_mesh()
-	connect("body_entered", self, "_on_body_entered")
+	if !is_ui_icon:
+		connect("body_entered", self, "_on_body_entered")
 
 func generate_diamond_mesh():
 	var st = SurfaceTool.new()

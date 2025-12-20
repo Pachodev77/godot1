@@ -7,37 +7,126 @@ var metal_material = SpatialMaterial.new()
 var visor_material = SpatialMaterial.new()
 var accent_material = SpatialMaterial.new()
 var jetpack_material = SpatialMaterial.new()
+var left_thruster_light : CSGSphere
+var right_thruster_light : CSGSphere
 
 func _ready():
+	print("--- TEST: Cargando icon.png para verificar sistema ---")
+	var test_tex = _load_external_texture("res://icon.png")
+	if test_tex:
+		print("  [EXITO] res://icon.png cargado correctamente.")
+	else:
+		print("  [FALLO] No se pudo cargar ni siquiera res://icon.png")
+		
 	setup_materials()
 	generate_robot()
 
 func setup_materials():
-	# Material metálico principal
-	metal_material.albedo_color = Color(0.3, 0.3, 0.35)
+	# Rutas de las texturas
+	var path_metal = "res://RobotTextures/robot_metal.jpg"
+	var path_visor = "res://RobotTextures/robot_visor.jpg"
+	var path_accent = "res://RobotTextures/robot_accent.jpg"
+	var path_jetpack = "res://RobotTextures/robot_jetpack.jpg"
+	
+	# RE-CREAR INSTANCIAS ÚNICAS
+	metal_material = SpatialMaterial.new()
+	visor_material = SpatialMaterial.new()
+	accent_material = SpatialMaterial.new()
+	jetpack_material = SpatialMaterial.new()
+	
+	var tex_metal = _load_external_texture(path_metal)
+	metal_material.albedo_texture = tex_metal
 	metal_material.metallic = 0.9
 	metal_material.roughness = 0.3
+	metal_material.albedo_color = Color(1, 1, 1) # Blanco
 	
-	# Material del visor (azul brillante)
-	visor_material.albedo_color = Color(0.1, 0.4, 1.0)
+	var tex_visor = _load_external_texture(path_visor)
+	visor_material.albedo_texture = tex_visor
 	visor_material.metallic = 0.5
 	visor_material.roughness = 0.1
 	visor_material.emission_enabled = true
 	visor_material.emission = Color(0.2, 0.6, 1.0)
-	visor_material.emission_energy = 1.5
+	visor_material.emission_energy = 1.2
+	visor_material.albedo_color = Color(1, 1, 1) # Sin tinte
+	visor_material.uv1_triplanar = true
+	visor_material.uv1_scale = Vector3(1, 1, 1) # Menos tiling para que se vean los hexágonos
 	
-	# Material de acentos (azul oscuro)
-	accent_material.albedo_color = Color(0.1, 0.2, 0.4)
+	var tex_accent = _load_external_texture(path_accent)
+	accent_material.albedo_texture = tex_accent
 	accent_material.metallic = 0.7
 	accent_material.roughness = 0.4
+	accent_material.albedo_color = Color(1, 1, 1) # Sin tinte
+	accent_material.uv1_triplanar = true
+	accent_material.uv1_scale = Vector3(2, 2, 2)
 	
-	# Material del jetpack (con emisión naranja)
-	jetpack_material.albedo_color = Color(0.2, 0.2, 0.25)
+	var tex_jetpack = _load_external_texture(path_jetpack)
+	if !tex_jetpack: tex_jetpack = tex_metal
+	jetpack_material.albedo_texture = tex_jetpack
 	jetpack_material.metallic = 0.85
 	jetpack_material.roughness = 0.35
-	jetpack_material.emission_enabled = true
-	jetpack_material.emission = Color(1.0, 0.5, 0.1)
-	jetpack_material.emission_energy = 0.5
+	jetpack_material.albedo_color = Color(0.2, 0.2, 0.2) # Jetpack oscuro para contrastar
+	jetpack_material.uv1_triplanar = true
+	jetpack_material.uv1_scale = Vector3(2, 2, 2)
+
+func _load_external_texture(path: String) -> Texture:
+	print("--- DEBUG: Buscando textura: ", path, " ---")
+	
+	# 1. PRIORIZAR CARGA DIRECTA DESDE DISCO para evitar cache de Godot si el archivo cambió
+	var final_path = ""
+	var paths_to_check = [
+		ProjectSettings.globalize_path(path),
+		path,
+		"RobotTextures/" + path.get_file()
+	]
+	
+	var file = File.new()
+	for p in paths_to_check:
+		if p == "" or p == null: continue
+		if file.file_exists(p):
+			final_path = p
+			break
+			
+	if final_path != "":
+		var err = file.open(final_path, File.READ)
+		if err == OK:
+			var buffer = file.get_buffer(file.get_len())
+			file.close()
+			
+			var image = Image.new()
+			var load_err = image.load_png_from_buffer(buffer)
+			if load_err != OK: load_err = image.load_jpg_from_buffer(buffer)
+			if load_err != OK: load_err = image.load(final_path)
+				
+			if load_err == OK:
+				var tex = ImageTexture.new()
+				tex.create_from_image(image, 7)
+				print("  [OK] Cargado DISCO: ", final_path)
+				return tex
+	
+	# 2. SEGUNDA OPCIÓN: CARGA ESTÁNDAR vía ResourceLoader
+	if ResourceLoader.exists(path):
+		var res = load(path)
+		if res is Texture:
+			print("  [OK] Cargado RECURSO: ", path)
+			return res
+		
+	return null
+
+func _apply_material(node: Spatial, mat: Material):
+	if node == null: return
+	
+	# DUPLICAR MATERIAL para asegurar independencia total (evitar sharing accidental)
+	var unique_mat = mat.duplicate()
+	
+	# En Godot 3, CSGShape usa la propiedad 'material'
+	if node is CSGShape:
+		node.set("material", unique_mat)
+	elif node is GeometryInstance:
+		node.material_override = unique_mat
+	elif node.has_method("set_surface_material"):
+		node.set_surface_material(0, unique_mat)
+	elif "material" in node:
+		node.set("material", unique_mat)
 
 func generate_robot():
 	# Crear esqueleto
@@ -165,25 +254,26 @@ func create_head(skeleton):
 	head_mesh.width = 0.25
 	head_mesh.height = 0.28
 	head_mesh.depth = 0.25
-	head_mesh.material = metal_material
+	_apply_material(head_mesh, metal_material)
 	bone_attach.add_child(head_mesh)
 	
 	# Visor
 	var visor = CSGBox.new()
+	visor.name = "Visor"
 	visor.width = 0.26
 	visor.height = 0.08
 	visor.depth = 0.02
 	visor.translation = Vector3(0, 0.05, 0.125)
-	visor.material = visor_material
-	head_mesh.add_child(visor)
+	_apply_material(visor, visor_material)
+	bone_attach.add_child(visor) # Añadir al bone, NO a head_mesh para evitar override
 	
 	# Antena pequeña
 	var antenna = CSGCylinder.new()
 	antenna.radius = 0.015
 	antenna.height = 0.1
 	antenna.translation = Vector3(0, 0.19, 0)
-	antenna.material = accent_material
-	head_mesh.add_child(antenna)
+	_apply_material(antenna, accent_material)
+	bone_attach.add_child(antenna)
 
 	# Detalles de cabeza
 	var ear_l = CSGBox.new()
@@ -191,24 +281,24 @@ func create_head(skeleton):
 	ear_l.height = 0.16
 	ear_l.depth = 0.16
 	ear_l.translation = Vector3(-0.13, 0, 0)
-	ear_l.material = accent_material
-	head_mesh.add_child(ear_l)
+	_apply_material(ear_l, accent_material)
+	bone_attach.add_child(ear_l)
 	
 	var ear_r = CSGBox.new()
 	ear_r.width = 0.05
 	ear_r.height = 0.16
 	ear_r.depth = 0.16
 	ear_r.translation = Vector3(0.13, 0, 0)
-	ear_r.material = accent_material
-	head_mesh.add_child(ear_r)
+	_apply_material(ear_r, accent_material)
+	bone_attach.add_child(ear_r)
 	
 	var chin = CSGBox.new()
 	chin.width = 0.18
 	chin.height = 0.06
 	chin.depth = 0.05
 	chin.translation = Vector3(0, -0.11, 0.11)
-	chin.material = accent_material
-	head_mesh.add_child(chin)
+	_apply_material(chin, accent_material)
+	bone_attach.add_child(chin)
 
 func create_torso(skeleton):
 	# Pecho
@@ -220,7 +310,7 @@ func create_torso(skeleton):
 	chest.width = 0.45
 	chest.height = 0.35
 	chest.depth = 0.25
-	chest.material = metal_material
+	_apply_material(chest, metal_material)
 	chest_attach.add_child(chest)
 	
 	# Detalles de Torso
@@ -229,8 +319,8 @@ func create_torso(skeleton):
 	vent.height = 0.12
 	vent.depth = 0.05
 	vent.translation = Vector3(0, 0.08, 0.11)
-	vent.material = jetpack_material
-	chest.add_child(vent)
+	_apply_material(vent, jetpack_material)
+	chest_attach.add_child(vent) # Sibling to chest
 	
 	# Placa pectoral
 	var chest_plate = CSGBox.new()
@@ -238,8 +328,8 @@ func create_torso(skeleton):
 	chest_plate.height = 0.25
 	chest_plate.depth = 0.02
 	chest_plate.translation = Vector3(0, 0.05, 0.135)
-	chest_plate.material = accent_material
-	chest.add_child(chest_plate)
+	_apply_material(chest_plate, accent_material)
+	chest_attach.add_child(chest_plate)
 	
 	# Spine/Abdomen
 	var spine_attach = BoneAttachment.new()
@@ -250,11 +340,12 @@ func create_torso(skeleton):
 	abdomen.width = 0.35
 	abdomen.height = 0.25
 	abdomen.depth = 0.22
-	abdomen.material = metal_material
+	_apply_material(abdomen, metal_material)
 	spine_attach.add_child(abdomen)
 	
 	# Cadera
 	var hips_attach = BoneAttachment.new()
+	var hips_idx = skeleton.find_bone("Hips") # Use index if name is problematic, but name is fine
 	hips_attach.bone_name = "Hips"
 	skeleton.add_child(hips_attach)
 	
@@ -262,7 +353,7 @@ func create_torso(skeleton):
 	hips.width = 0.4
 	hips.height = 0.18
 	hips.depth = 0.24
-	hips.material = metal_material
+	_apply_material(hips, metal_material)
 	hips_attach.add_child(hips)
 
 func create_arms(skeleton):
@@ -285,7 +376,7 @@ func create_arm(skeleton, side, dir):
 	pad.height = 0.08
 	pad.depth = 0.22
 	pad.translation = Vector3(0, 0.1, 0)
-	pad.material = accent_material
+	_apply_material(pad, accent_material)
 	shoulder_attach.add_child(pad)
 	
 	# Brazo superior (vertical hacia abajo)
@@ -297,7 +388,7 @@ func create_arm(skeleton, side, dir):
 	upper_arm.radius = 0.08
 	upper_arm.height = 0.35
 	upper_arm.translation = Vector3(0, -0.175, 0)  # Centrado verticalmente
-	upper_arm.material = metal_material
+	_apply_material(upper_arm, metal_material)
 	upper_arm_attach.add_child(upper_arm)
 	
 	# Codo
@@ -307,7 +398,7 @@ func create_arm(skeleton, side, dir):
 	
 	var elbow = CSGSphere.new()
 	elbow.radius = 0.07
-	elbow.material = accent_material
+	_apply_material(elbow, accent_material)
 	forearm_attach.add_child(elbow)
 	
 	# Antebrazo (vertical hacia abajo)
@@ -315,17 +406,17 @@ func create_arm(skeleton, side, dir):
 	forearm.radius = 0.07
 	forearm.height = 0.30
 	forearm.translation = Vector3(0, -0.15, 0)  # Centrado verticalmente
-	forearm.material = metal_material
+	_apply_material(forearm, metal_material)
 	forearm_attach.add_child(forearm)
 	
 	# Guantelete
 	var gauntlet = CSGBox.new()
 	gauntlet.width = 0.15
-	gauntlet.height = 0.18
+	gauntlet.height = 0.20
 	gauntlet.depth = 0.15
-	gauntlet.translation = Vector3(0, 0, 0)
-	gauntlet.material = accent_material
-	forearm.add_child(gauntlet)
+	gauntlet.translation = Vector3(0, -0.15, 0)
+	_apply_material(gauntlet, accent_material)
+	forearm_attach.add_child(gauntlet) # Sibling to forearm cylinder
 	
 	# Mano
 	var hand_attach = BoneAttachment.new()
@@ -337,7 +428,7 @@ func create_arm(skeleton, side, dir):
 	hand.height = 0.15
 	hand.depth = 0.08
 	hand.translation = Vector3(0, -0.075, 0)  # Centrada verticalmente
-	hand.material = metal_material
+	_apply_material(hand, metal_material)
 	hand_attach.add_child(hand)
 
 func create_legs(skeleton):
@@ -354,7 +445,7 @@ func create_leg(skeleton, side, dir):
 	thigh.radius = 0.11
 	thigh.height = 0.4
 	thigh.translation = Vector3(0, -0.2, 0)
-	thigh.material = metal_material
+	_apply_material(thigh, metal_material)
 	upper_leg_attach.add_child(thigh)
 	
 	# Placa Muslo
@@ -362,9 +453,9 @@ func create_leg(skeleton, side, dir):
 	thigh_plate.width = 0.23
 	thigh_plate.height = 0.25
 	thigh_plate.depth = 0.05
-	thigh_plate.translation = Vector3(0, 0, 0.09)
-	thigh_plate.material = accent_material
-	thigh.add_child(thigh_plate)
+	thigh_plate.translation = Vector3(0, -0.2, 0.09)
+	_apply_material(thigh_plate, accent_material)
+	upper_leg_attach.add_child(thigh_plate) # Sibling to thigh
 	
 	# Rodilla
 	var lower_leg_attach = BoneAttachment.new()
@@ -373,7 +464,7 @@ func create_leg(skeleton, side, dir):
 	
 	var knee = CSGSphere.new()
 	knee.radius = 0.09
-	knee.material = accent_material
+	_apply_material(knee, accent_material)
 	lower_leg_attach.add_child(knee)
 	
 	# Rodillera
@@ -382,15 +473,15 @@ func create_leg(skeleton, side, dir):
 	kneepad.height = 0.14
 	kneepad.depth = 0.05
 	kneepad.translation = Vector3(0, 0, 0.08)
-	kneepad.material = accent_material
-	knee.add_child(kneepad)
+	_apply_material(kneepad, accent_material)
+	lower_leg_attach.add_child(kneepad) # Sibling to knee
 	
 	# Espinilla
 	var shin = CSGCylinder.new()
 	shin.radius = 0.09
 	shin.height = 0.35
 	shin.translation = Vector3(0, -0.175, 0)
-	shin.material = metal_material
+	_apply_material(shin, metal_material)
 	lower_leg_attach.add_child(shin)
 	
 	# Pie
@@ -403,7 +494,7 @@ func create_leg(skeleton, side, dir):
 	foot.height = 0.12
 	foot.depth = 0.25
 	foot.translation = Vector3(0, -0.06, 0.05)
-	foot.material = metal_material
+	_apply_material(foot, metal_material)
 	foot_attach.add_child(foot)
 
 func create_jetpack(skeleton):
@@ -416,7 +507,7 @@ func create_jetpack(skeleton):
 	body.width = 0.3
 	body.height = 0.4
 	body.depth = 0.15
-	body.material = jetpack_material
+	_apply_material(body, jetpack_material)
 	jetpack_attach.add_child(body)
 	
 	# Propulsor izquierdo
@@ -424,26 +515,37 @@ func create_jetpack(skeleton):
 	thruster_l.radius = 0.08
 	thruster_l.height = 0.35
 	thruster_l.translation = Vector3(-0.1, -0.1, 0)
-	thruster_l.material = jetpack_material
-	body.add_child(thruster_l)
+	_apply_material(thruster_l, jetpack_material)
+	jetpack_attach.add_child(thruster_l) # Sibling to body
 	
 	# Propulsor derecho
 	var thruster_r = CSGCylinder.new()
 	thruster_r.radius = 0.08
 	thruster_r.height = 0.35
 	thruster_r.translation = Vector3(0.1, -0.1, 0)
-	thruster_r.material = jetpack_material
-	body.add_child(thruster_r)
+	_apply_material(thruster_r, jetpack_material)
+	jetpack_attach.add_child(thruster_r) # Sibling to body
 	
 	# Luces de propulsión
 	var light_l = CSGSphere.new()
 	light_l.radius = 0.06
 	light_l.translation = Vector3(-0.1, -0.275, 0)
-	light_l.material = visor_material
-	body.add_child(light_l)
+	_apply_material(light_l, visor_material)
+	jetpack_attach.add_child(light_l) # Sibling to body
+	left_thruster_light = light_l
 	
 	var light_r = CSGSphere.new()
 	light_r.radius = 0.06
 	light_r.translation = Vector3(0.1, -0.275, 0)
-	light_r.material = visor_material
-	body.add_child(light_r)
+	_apply_material(light_r, visor_material)
+	jetpack_attach.add_child(light_r) # Sibling to body
+	right_thruster_light = light_r
+
+func set_jetpack_emission(active: bool):
+	var target_scale = Vector3(1, 1, 1) if !active else Vector3(1.5, 3.0, 1.5)
+	
+	if left_thruster_light:
+		left_thruster_light.scale = target_scale
+		
+	if right_thruster_light:
+		right_thruster_light.scale = target_scale

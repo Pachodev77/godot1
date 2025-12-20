@@ -26,16 +26,90 @@ func _ready():
 	# Buscar el label de cristales en la UI
 	crystal_label = get_node_or_null("/root/Escena/CanvasLayer/CrystalLabel")
 	
-	# Si no existe, crear uno
+	# Si no existe, crear la estructura de la UI (Icono 3D + Contador)
 	if crystal_label == null:
 		var canvas_layer = get_node_or_null("/root/Escena/CanvasLayer")
 		if canvas_layer:
+			# Contenedor principal
+			var hbox = HBoxContainer.new()
+			hbox.name = "CrystalUI"
+			hbox.rect_position = Vector2(25, 25)
+			hbox.set("custom_constants/separation", 10)
+			canvas_layer.add_child(hbox)
+			
+			# Contenedor del icono (Usamos TextureRect para mejor soporte de transparencia)
+			var icon_texture_rect = TextureRect.new()
+			icon_texture_rect.rect_min_size = Vector2(80, 80)
+			icon_texture_rect.expand = true
+			icon_texture_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+			hbox.add_child(icon_texture_rect)
+			
+			# Viewport aislado
+			var viewport = Viewport.new()
+			viewport.size = Vector2(256, 256)
+			viewport.transparent_bg = true
+			viewport.own_world = true # Aislar del mundo principal (sin niebla/luces externas)
+			viewport.usage = Viewport.USAGE_3D
+			viewport.render_target_v_flip = true
+			viewport.msaa = Viewport.MSAA_4X
+			viewport.render_target_update_mode = Viewport.UPDATE_ALWAYS
+			add_child(viewport) # Añadir como hijo del manager, no en la UI directamente
+			
+			# Asignar la textura del viewport al rect
+			icon_texture_rect.texture = viewport.get_texture()
+			
+			# Escena 3D dentro del icono
+			var spatial = Spatial.new()
+			viewport.add_child(spatial)
+			
+			var camera = Camera.new()
+			camera.translation = Vector3(0, 0, 1.2)
+			camera.current = true
+			spatial.add_child(camera)
+			
+			var crystal_icon = crystal_scene.instance()
+			crystal_icon.translation = Vector3(0, 0, 0)
+			crystal_icon.scale = Vector3(1.2, 1.2, 1.2)
+			crystal_icon.is_ui_icon = true
+			
+			if crystal_icon.has_node("CollisionShape"):
+				crystal_icon.get_node("CollisionShape").queue_free()
+			spatial.add_child(crystal_icon)
+			
+			# Luz dedicada para el icono
+			var light = OmniLight.new()
+			light.translation = Vector3(1, 1, 1)
+			light.light_energy = 2.0
+			spatial.add_child(light)
+			
+			var light2 = OmniLight.new()
+			light2.translation = Vector3(-1, -1, 1)
+			light2.light_energy = 1.0
+			spatial.add_child(light2)
+			
+			# Label para el contador con fondo negro
 			crystal_label = Label.new()
 			crystal_label.name = "CrystalLabel"
-			crystal_label.rect_position = Vector2(20, 20)
-			crystal_label.rect_scale = Vector2(2, 2)
-			crystal_label.add_color_override("font_color", Color(0.4, 0.8, 1, 1))
-			canvas_layer.add_child(crystal_label)
+			crystal_label.rect_scale = Vector2(2.2, 2.2)
+			crystal_label.add_color_override("font_color", Color(0.9, 0.7, 1.0, 1.0)) # Púrpura más claro para contraste
+			
+			var bg_style = StyleBoxFlat.new()
+			bg_style.bg_color = Color(0, 0, 0, 0.7) # Negro semi-transparente para que no sea muy brusco
+			bg_style.set_corner_radius_all(5)
+			bg_style.content_margin_left = 10
+			bg_style.content_margin_right = 10
+			bg_style.content_margin_top = 2
+			bg_style.content_margin_bottom = 2
+			crystal_label.add_stylebox_override("normal", bg_style)
+			
+			hbox.add_child(crystal_label)
+			
+			# Hacer que el cristal del icono gire
+			var anim_timer = Timer.new()
+			anim_timer.wait_time = 0.016 # ~60fps
+			anim_timer.autostart = true
+			anim_timer.connect("timeout", self, "_animate_icon", [crystal_icon])
+			add_child(anim_timer)
 	
 	# Generar cristales
 	spawn_crystals()
@@ -104,7 +178,12 @@ func on_crystal_collected():
 
 func update_ui():
 	if crystal_label:
-		crystal_label.text = "Cristales: " + str(collected_crystals) + "/" + str(total_crystals)
+		# Ya no ponemos "Cristales:", solo el número
+		crystal_label.text = str(collected_crystals) + " / " + str(total_crystals)
+
+func _animate_icon(icon):
+	if is_instance_valid(icon):
+		icon.rotate_y(0.02)
 
 func get_collected_count() -> int:
 	return collected_crystals
