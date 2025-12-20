@@ -91,14 +91,26 @@ func _physics_process(delta):
 	if animation_player.current_animation != anim:
 		animation_player.play(anim)
 
-	# Joystick camera rotation (orbital)
 	if camera_vector != Vector2.ZERO:
 		# Rotación horizontal (alrededor del eje Y del pivot)
-		pivot.rotate_y(-camera_vector.x * mouse_sensitivity * 20)
+		pivot.rotate_y(-camera_vector.x * mouse_sensitivity * 12)
 		
 		# Rotación vertical (alrededor del eje X del pivot)
-		camera_rotation_x += camera_vector.y * mouse_sensitivity * 10
-		camera_rotation_x = clamp(camera_rotation_x, deg2rad(max_look_down), deg2rad(max_look_up))
+		var invert_factor = 1.0
+		if camera_mode == 2:
+			invert_factor = -1.0 # Invertir en primera persona (Arriba mira abajo)
+			
+		camera_rotation_x += camera_vector.y * mouse_sensitivity * 6 * invert_factor
+		
+		# Definir límites dinámicos según el modo de cámara
+		var current_limit_up = max_look_up
+		var current_limit_down = max_look_down
+		
+		if camera_mode == 2: # Primera persona: Libertad casi total
+			current_limit_up = 89.0
+			current_limit_down = -89.0
+			
+		camera_rotation_x = clamp(camera_rotation_x, deg2rad(current_limit_down), deg2rad(current_limit_up))
 		pivot.rotation.x = camera_rotation_x
 	
 	# Camera zoom (solo actualizar si hay diferencia)
@@ -230,6 +242,11 @@ func _on_ZoomButton_pressed():
 	camera_mode += 1
 	if camera_mode > 2:
 		camera_mode = 0
+	
+	# Si volvemos a modo normal/zoom (no FP), asegurar que la rotación respete los límites
+	if camera_mode != 2:
+		camera_rotation_x = clamp(camera_rotation_x, deg2rad(max_look_down), deg2rad(max_look_up))
+		pivot.rotation.x = camera_rotation_x
 
 func _on_FlashlightButton_pressed():
 	if flashlight:
