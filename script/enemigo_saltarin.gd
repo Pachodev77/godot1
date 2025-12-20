@@ -5,6 +5,8 @@ export var speed : float = 5.0
 export var jump_force : float = 12.0
 export var gravity : float = 30.0
 export var attack_range : float = 12.0
+export var health : int = 5
+var is_dead := false
 
 # Variables de estado
 var velocity := Vector3.ZERO
@@ -18,6 +20,7 @@ onready var anim_timer = $JumpInterval
 
 func _ready():
 	_find_target()
+	add_to_group("enemigos")
 	randomize()
 	jump_timer = rand_range(0, jump_interval)
 	
@@ -26,6 +29,11 @@ func _ready():
 		for child in mesh.get_children():
 			if child is VisualInstance:
 				child.extra_cull_margin = 100.0
+				# Preparar material para el flash si es una geometría
+				if child is GeometryInstance and !child.material_override:
+					var mat = SpatialMaterial.new()
+					# Intentar heredar color si es posible, o usar el que tiene
+					child.material_override = mat
 
 func _find_target():
 	var players = get_tree().get_nodes_in_group("jugador")
@@ -33,6 +41,10 @@ func _find_target():
 		target = players[0]
 
 func _physics_process(delta):
+	if is_dead:
+		move_and_slide(Vector3(0, -gravity, 0), Vector3.UP)
+		return
+		
 	# Aplicar gravedad
 	if not is_on_floor():
 		velocity.y -= gravity * delta
@@ -85,6 +97,45 @@ func perform_jump(dist_to_player):
 	
 	# Pequeño efecto visual de escala al saltar
 	tween_jump_effect()
+
+func flash_hit():
+	if is_dead: return
+	if !mesh: return
+	
+	health -= 1
+	if health <= 0:
+		die()
+		return
+	
+	# Crear un tween para el efecto de flash en todos los hijos que sean geometría
+	var t = create_tween() if has_method("create_tween") else null
+	if t:
+		for child in mesh.get_children():
+			if child is GeometryInstance:
+				# Poner rojo brillante
+				t.tween_property(child, "material_override:albedo_color", Color(2.0, 0.5, 0.5), 0.05).set_trans(Tween.TRANS_SINE)
+				# Volver a lo normal (blanco)
+				t.tween_property(child, "material_override:albedo_color", Color(1, 1, 1), 0.1).set_trans(Tween.TRANS_SINE)
+
+func die():
+	if is_dead: return
+	is_dead = true
+	
+	# Quitar del grupo inmediatamente para que la mira lo ignore
+	remove_from_group("enemigos")
+	
+	# Efecto de muerte simple (escalar a cero y desaparecer)
+	var t = create_tween() if has_method("create_tween") else null
+	if t:
+		# Flash rojo intenso final
+		for child in mesh.get_children():
+			if child is GeometryInstance:
+				t.parallel().tween_property(child, "material_override:albedo_color", Color(5.0, 0.0, 0.0), 0.2)
+		
+		t.tween_property(self, "scale", Vector3.ZERO, 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
+		t.tween_callback(self, "queue_free")
+	else:
+		queue_free()
 
 func tween_jump_effect():
 	# Efecto visual simple sin necesidad de AnimationPlayer

@@ -420,6 +420,7 @@ func create_arm(skeleton, side, dir):
 	
 	# Mano
 	var hand_attach = BoneAttachment.new()
+	hand_attach.name = side + "Hand"
 	hand_attach.bone_name = side + "Hand"
 	skeleton.add_child(hand_attach)
 	

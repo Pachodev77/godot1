@@ -1,0 +1,15 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+path="res://.import/Jetpack.mp3-050648228801d31c6b0209307dfd7598.mp3str"
+
+[deps]
+
+source_file="res://sounds/Jetpack.mp3"
+dest_files=[ "res://.import/Jetpack.mp3-050648228801d31c6b0209307dfd7598.mp3str" ]
+
+[params]
+
+loop=true
+loop_offset=0

@@ -34,6 +34,20 @@ export var camera_near_min : float = 0.5
 export var camera_near_max : float = 1.5
 
 func _physics_process(delta):
+	# Laser visual timer
+	if laser_timer > 0:
+		laser_timer -= delta
+		if laser_timer <= 0:
+			if laser_geom:
+				laser_geom.clear()
+	
+	# Laser audio timer (solo 1 segundo)
+	if laser_audio_timer > 0:
+		laser_audio_timer -= delta
+		if laser_audio_timer <= 0:
+			if laser_sound_player:
+				laser_sound_player.stop()
+	
 	var direction = Vector3.ZERO
 
 	# Obtener la dirección basada en la rotación de la cámara (orbital)
@@ -85,6 +99,9 @@ func _physics_process(delta):
 			velocidad.y = jump_velocity
 			snap = Vector3.ZERO
 			is_jumping = true
+			if jump_sound_player:
+				jump_sound_player.stop()
+				jump_sound_player.play(0.5)
 	
 	jump_requested = false
 	
@@ -225,6 +242,12 @@ onready var jump_button_node = get_node_or_null("/root/Escena/CanvasLayer/Margin
 onready var action_button_node = get_node_or_null("/root/Escena/CanvasLayer/MarginContainer/VBoxContainer/HBoxContainer/CameraJoystickContainer/ButtonContainer/ActionButton")
 onready var r1_button_node = get_node_or_null("/root/Escena/CanvasLayer/MarginContainer/VBoxContainer/HBoxContainer/StackExtraR/ExtraBtnR1")
 onready var r3_button_node = get_node_or_null("/root/Escena/CanvasLayer/MarginContainer/VBoxContainer/HBoxContainer/StackExtraR/ExtraBtnR3")
+onready var crosshair_node = get_node_or_null("/root/Escena/CanvasLayer/AutoCrosshair")
+
+var laser_geom : ImmediateGeometry = null
+var laser_material : SpatialMaterial = null
+var laser_timer : float = 0.0
+var laser_audio_timer : float = 0.0
 var fps_label_node = null
 onready var cull_targets = [
 	get_node_or_null("/root/Escena/Forest"),
@@ -267,11 +290,69 @@ func _ready():
 		r1_button_node.connect("button_down", self, "_on_R1Button_down")
 		r1_button_node.connect("button_up", self, "_on_R1Button_up")
 
+	# Setup Laser
+	laser_geom = ImmediateGeometry.new()
+	add_child(laser_geom)
+	laser_geom.set_as_toplevel(true)
+	laser_geom.global_transform = Transform.IDENTITY
+	
+	laser_material = SpatialMaterial.new()
+	laser_material.flags_unshaded = true
+	laser_material.flags_no_depth_test = false # Respetar profundidad (no atravesar avatar)
+	laser_material.albedo_color = Color(1, 0, 0, 1) # Rojo puro
+	laser_geom.material_override = laser_material
+	
 	animation_player.connect("animation_finished", self, "_on_animation_finished")
 
 	fps_label_node = get_node_or_null("/root/Escena/CanvasLayer/FPSLabel")
 	if fps_label_node == null:
 		fps_label_node = get_node_or_null("/root/Escena/ControlUI/FPSLabel")
+	
+	_setup_audio()
+
+var ambient_player : AudioStreamPlayer
+var jump_sound_player : AudioStreamPlayer
+var laser_sound_player : AudioStreamPlayer
+var jetpack_sound_player : AudioStreamPlayer
+
+func _setup_audio():
+	# Música de ambiente
+	ambient_player = AudioStreamPlayer.new()
+	var ambient_stream = load("res://sounds/Ambient.mp3")
+	if ambient_stream is AudioStreamMP3:
+		ambient_stream.loop = true
+	ambient_player.stream = ambient_stream
+	ambient_player.autoplay = true
+	ambient_player.bus = "Master"
+	add_child(ambient_player)
+	
+	# Jump
+	jump_sound_player = AudioStreamPlayer.new()
+	var jump_stream = load("res://sounds/Jump.mp3")
+	if jump_stream is AudioStreamMP3:
+		jump_stream.loop = false
+	jump_sound_player.stream = jump_stream
+	add_child(jump_sound_player)
+	
+	# Laser
+	laser_sound_player = AudioStreamPlayer.new()
+	var laser_stream = load("res://sounds/Laser.mp3")
+	if laser_stream is AudioStreamMP3:
+		laser_stream.loop = false
+	laser_sound_player.stream = laser_stream
+	add_child(laser_sound_player)
+	
+	# Jetpack
+	jetpack_sound_player = AudioStreamPlayer.new()
+	var jetpack_stream = load("res://sounds/Jetpack.mp3")
+	if jetpack_stream is AudioStreamMP3:
+		jetpack_stream.loop = true
+	jetpack_sound_player.stream = jetpack_stream
+	add_child(jetpack_sound_player)
+	
+	# Iniciar ambiente si no suena por autoplay
+	if !ambient_player.playing:
+		ambient_player.play()
 	
 	# ELIMINADO: Conexiones duplicadas de botones (ya se conectan en líneas 174-181)
 
@@ -310,6 +391,60 @@ func _on_ActionButton_pressed():
 	if !is_attacking:
 		is_attacking = true
 		animation_player.play("Attack")
+		_fire_laser()
+
+func _fire_laser():
+	if !laser_geom: return
+	
+	if laser_sound_player:
+		laser_sound_player.stop()
+		laser_sound_player.play()
+		laser_audio_timer = 1.5 # Limitar a 1.5 segundos
+	
+	var start_pos = _get_hand_pos()
+	var end_pos = Vector3.ZERO
+	
+	if crosshair_node and crosshair_node.current_target and is_instance_valid(crosshair_node.current_target):
+		end_pos = crosshair_node.current_target_3d_pos
+	else:
+		var forward = -camera.global_transform.basis.z.normalized()
+		end_pos = start_pos + (forward * 50.0)
+	
+	# Offset para que no empiece DENTRO de la mano y se oculte por el mesh del brazo
+	var shot_dir = (end_pos - start_pos).normalized()
+	start_pos += shot_dir * 0.2
+	
+	# Dibujar el rayo
+	laser_geom.clear()
+	laser_geom.begin(Mesh.PRIMITIVE_LINES)
+	laser_geom.add_vertex(start_pos)
+	laser_geom.add_vertex(end_pos)
+	laser_geom.end()
+	
+	laser_timer = 0.1 # Duración del destello
+	
+	# Detección de impacto (Raycast manual)
+	var space_state = get_world().direct_space_state
+	# Excluir al propio jugador del raycast
+	var result = space_state.intersect_ray(start_pos, end_pos, [self])
+	
+	if result:
+		var hit_collider = result.collider
+		if hit_collider and hit_collider.is_in_group("enemigos"):
+			if hit_collider.has_method("flash_hit"):
+				hit_collider.flash_hit()
+
+func _get_hand_pos() -> Vector3:
+	if robot_model:
+		var skeleton = robot_model.get_node_or_null("Skeleton")
+		if skeleton:
+			var hand = skeleton.get_node_or_null("RightHand")
+			if hand:
+				# Forzar actualización si es necesario
+				return hand.global_transform.origin
+	
+	# Fallback si no se encuentra la mano
+	return global_transform.origin + Vector3.UP * 1.5
 
 func _on_R3Button_down():
 	is_sprinting = true
@@ -319,11 +454,15 @@ func _on_R3Button_up():
 
 func _on_R1Button_down():
 	is_jetpacking = true
+	if jetpack_sound_player:
+		jetpack_sound_player.play()
 	if robot_model.has_method("set_jetpack_emission"):
 		robot_model.set_jetpack_emission(true)
 
 func _on_R1Button_up():
 	is_jetpacking = false
+	if jetpack_sound_player:
+		jetpack_sound_player.stop()
 	if robot_model.has_method("set_jetpack_emission"):
 		robot_model.set_jetpack_emission(false)
 

@@ -2,6 +2,7 @@
 
 [ext_resource path="res://escena/joystick.tscn" type="PackedScene" id=1]
 [ext_resource path="res://script/performance_settings.gd" type="Script" id=8]
+[ext_resource path="res://script/auto_crosshair.gd" type="Script" id=14]
 
 [sub_resource type="RectangleShape2D" id=1]
 extents = Vector2( 50, 40 )
@@ -215,6 +216,15 @@ corner_radius_bottom_left = 4
 
 [node name="ControlUI" type="CanvasLayer"]
 script = ExtResource( 8 )
+
+[node name="AutoCrosshair" type="Control" parent="."]
+margin_right = 12.0
+margin_bottom = 12.0
+rect_min_size = Vector2( 12, 12 )
+script = ExtResource( 14 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
 
 [node name="FPSLabel" type="Label" parent="."]
 anchor_left = 1.0
