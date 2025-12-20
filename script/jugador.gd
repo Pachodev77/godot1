@@ -176,9 +176,9 @@ var fps_update_interval : float = 0.5  # Actualizar FPS cada 0.5s
 
 onready var pivot = $Pivot
 onready var camera = $Pivot/Camera
-onready var flashlight = $"3DGodotRobot/SpotLight"
-onready var robot_model = $"3DGodotRobot"
-onready var animation_player = $"3DGodotRobot/AnimationPlayer"
+onready var flashlight = $"RobotProcedural/SpotLight"
+onready var robot_model = $"RobotProcedural"
+onready var animation_player = $"RobotProcedural/AnimationPlayer"
 
 var camera_rotation_x := 0.0
 
