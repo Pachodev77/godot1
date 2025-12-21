@@ -11,13 +11,6 @@ var left_thruster_light : CSGSphere
 var right_thruster_light : CSGSphere
 
 func _ready():
-	print("--- TEST: Cargando icon.png para verificar sistema ---")
-	var test_tex = _load_external_texture("res://icon.png")
-	if test_tex:
-		print("  [EXITO] res://icon.png cargado correctamente.")
-	else:
-		print("  [FALLO] No se pudo cargar ni siquiera res://icon.png")
-		
 	setup_materials()
 	generate_robot()
 
@@ -93,8 +86,18 @@ func _load_external_texture(path: String) -> Texture:
 			file.close()
 			
 			var image = Image.new()
-			var load_err = image.load_png_from_buffer(buffer)
-			if load_err != OK: load_err = image.load_jpg_from_buffer(buffer)
+			var load_err = ERR_CANT_OPEN
+			var ext = final_path.get_extension().to_lower()
+			
+			if ext == "png":
+				load_err = image.load_png_from_buffer(buffer)
+			elif ext == "jpg" or ext == "jpeg":
+				load_err = image.load_jpg_from_buffer(buffer)
+			else:
+				# Si no tiene extensión conocida, probamos ambos
+				load_err = image.load_png_from_buffer(buffer)
+				if load_err != OK: load_err = image.load_jpg_from_buffer(buffer)
+				
 			if load_err != OK: load_err = image.load(final_path)
 				
 			if load_err == OK:
@@ -345,7 +348,7 @@ func create_torso(skeleton):
 	
 	# Cadera
 	var hips_attach = BoneAttachment.new()
-	var hips_idx = skeleton.find_bone("Hips") # Use index if name is problematic, but name is fine
+	var _hips_idx = skeleton.find_bone("Hips") # Use index if name is problematic, but name is fine
 	hips_attach.bone_name = "Hips"
 	skeleton.add_child(hips_attach)
 	
@@ -362,7 +365,7 @@ func create_arms(skeleton):
 	# Brazo derecho
 	create_arm(skeleton, "Right", 1)
 
-func create_arm(skeleton, side, dir):
+func create_arm(skeleton, side, _dir):
 	# Hombro
 	var shoulder_attach = BoneAttachment.new()
 	shoulder_attach.bone_name = side + "Shoulder"
@@ -436,7 +439,7 @@ func create_legs(skeleton):
 	create_leg(skeleton, "Left", -1)
 	create_leg(skeleton, "Right", 1)
 
-func create_leg(skeleton, side, dir):
+func create_leg(skeleton, side, _dir):
 	# Muslo
 	var upper_leg_attach = BoneAttachment.new()
 	upper_leg_attach.bone_name = side + "UpperLeg"

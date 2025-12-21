@@ -332,6 +332,7 @@ func _setup_audio():
 	if jump_stream is AudioStreamMP3:
 		jump_stream.loop = false
 	jump_sound_player.stream = jump_stream
+	jump_sound_player.volume_db = -15.0
 	add_child(jump_sound_player)
 	
 	# Laser
@@ -340,6 +341,7 @@ func _setup_audio():
 	if laser_stream is AudioStreamMP3:
 		laser_stream.loop = false
 	laser_sound_player.stream = laser_stream
+	laser_sound_player.volume_db = -15.0
 	add_child(laser_sound_player)
 	
 	# Jetpack

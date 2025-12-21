@@ -18,7 +18,7 @@ func _ready():
 
 func spawn_enemies():
 	randomize()
-	for i in range(num_enemies):
+	for _i in range(num_enemies):
 		var random_x = rand_range(spawn_min_x, spawn_max_x)
 		var random_z = rand_range(spawn_min_z, spawn_max_z)
 		

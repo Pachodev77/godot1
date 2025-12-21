@@ -25,7 +25,7 @@ func collect_nodes(node):
 	for child in node.get_children():
 		collect_nodes(child)
 
-func _process(delta):
+func _process(_delta):
 	var processed = 0
 	while current_index < nodes_to_process.size() and processed < nodes_per_frame:
 		var node = nodes_to_process[current_index]

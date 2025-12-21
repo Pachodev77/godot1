@@ -16,7 +16,6 @@ export var jump_interval : float = 1.2
 var is_jumping := false
 
 onready var mesh = $MeshInstance
-onready var anim_timer = $JumpInterval
 
 func _ready():
 	_find_target()
